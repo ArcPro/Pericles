@@ -1,0 +1,30 @@
+# .NET build output
+**/bin/
+**/obj/
+
+# PHP local dependencies and configuration
+Site/vendor/
+Site/.env
+
+# Local device identities and private key material
+**/device.json
+**/device.key
+*.p8
+*.p12
+*.pfx
+*.private.pem
+
+# Private commercial modules and signing secrets
+Site/storage/modules/*
+!Site/storage/modules/.gitkeep
+DevelopmentModules/*
+!DevelopmentModules/.gitkeep
+Secrets/*
+!Secrets/.gitkeep
+
+# Test and editor output
+.vs/
+.idea/
+TestResults/
+*.user
+*.suo

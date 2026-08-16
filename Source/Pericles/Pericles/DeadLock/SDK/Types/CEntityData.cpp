@@ -1,0 +1,214 @@
+#include "CEntityData.hpp"
+
+#include <DeadLock/SDK/FunctionListSDK.hpp>
+#include <DeadLock/SDK/Math/Math.hpp>
+
+static auto SchemaClassDerivesFrom( CSchemaClassBinding* pBinding , const char* szClassName ) -> bool
+{
+	for ( int Depth = 0; pBinding && Depth < 32; ++Depth )
+	{
+		const char* szBindingName = pBinding->m_bindingName();
+		if ( szBindingName && strcmp( szBindingName , szClassName ) == 0 )
+			return true;
+
+		auto* pBaseClass = pBinding->m_baseClass();
+		pBinding = pBaseClass ? pBaseClass->m_classInfo() : nullptr;
+	}
+
+	return false;
+}
+
+auto CGameSceneNode::GetBonePosition( int32 BoneIndex , Vector3& BonePos ) -> bool
+{
+	if ( auto* pSkeletonInstance = GetSkeletonInstance(); pSkeletonInstance && BoneIndex != -1 )
+	{
+		CModelState ModelState = pSkeletonInstance->m_modelState();
+
+		if ( const CBoneData* pBones = ModelState.m_pBones; pBones )
+		{
+			const CBoneData& Data = pBones[BoneIndex];
+
+			BonePos = Data.position;
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+auto CSkeletonInstance::CalcWorldSpaceBones( unsigned int Mask ) -> void
+{
+	return CSkeletonInstance_CalcWorldSpaceBones( this , Mask );
+}
+
+auto C_BaseEntity::IsCitadelPlayerController() -> bool
+{
+	const auto* pszDesingerName = pEntityIdentity()->DesingerName().String();
+
+	if ( pszDesingerName && strcmp( pszDesingerName , XorStr( "citadel_player_controller" ) ) == 0 )
+		return true;
+
+	return false;
+}
+
+auto C_BaseEntity::IsCitadelPlayerPawn() -> bool
+{
+	const auto* pszDesingerName = pEntityIdentity()->DesingerName().String();
+
+	if ( pszDesingerName && strcmp( pszDesingerName , XorStr( "player" ) ) == 0 )
+		return true;
+
+	return false;
+}
+
+auto C_BaseEntity::IsNpcTrooper() -> bool
+{
+	const auto* pszDesingerName = pEntityIdentity()->DesingerName().String();
+
+	if ( pszDesingerName && strcmp( pszDesingerName , XorStr( "npc_trooper" ) ) == 0 )
+		return true;
+
+	return false;
+}
+
+auto C_BaseEntity::IsNpcTrooperNeutral() -> bool
+{
+	const auto* pszDesingerName = pEntityIdentity()->DesingerName().String();
+
+	if ( pszDesingerName && strcmp( pszDesingerName , XorStr( "npc_trooper_neutral" ) ) == 0 )
+		return true;
+
+	return false;
+}
+
+auto C_BaseEntity::IsCitadelObjective() -> bool
+{
+	auto* pBinding = GetSchemaClassBinding();
+	static constexpr const char* ObjectiveClasses[] =
+	{
+		"C_NPC_BaseDefenseSentry",
+		"C_NPC_ShieldedSentry",
+		"C_NPC_FieldSentry",
+		"C_NPC_MortarSentry",
+		"C_NPC_TeslaCoil",
+		"C_NPC_MidBoss",
+		"C_NPC_TrooperBoss",
+		"C_NPC_BarrackBoss",
+		"C_NPC_Boss_Tier2",
+		"C_NPC_Boss_Tier3"
+	};
+
+	for ( const char* szClassName : ObjectiveClasses )
+	{
+		if ( SchemaClassDerivesFrom( pBinding , szClassName ) )
+			return true;
+	}
+
+	return false;
+}
+
+auto C_BaseEntity::IsCitadelNpc() -> bool
+{
+	auto* pBinding = GetSchemaClassBinding();
+	if ( SchemaClassDerivesFrom( pBinding , "C_AI_CitadelNPC" )
+		|| SchemaClassDerivesFrom( pBinding , "C_NPC_SimpleAnimatingAI" ) )
+	{
+		return true;
+	}
+
+	const char* szBindingName = pBinding ? pBinding->m_bindingName() : nullptr;
+	return szBindingName && strncmp( szBindingName , "C_NPC_" , 6 ) == 0;
+}
+
+auto C_BaseEntity::IsItemXP() -> bool
+{
+	const auto* pszDesingerName = pEntityIdentity()->DesingerName().String();
+
+	if ( pszDesingerName && strcmp( pszDesingerName , XorStr( "item_xp" ) ) == 0 )
+		return true;
+
+	return false;
+}
+
+auto C_BaseEntity::IsWorldItemPanel() -> bool
+{
+	const auto* pszDesingerName = pEntityIdentity()->DesingerName().String();
+
+	if ( pszDesingerName && strcmp( pszDesingerName , XorStr( "in_world_item_panel" ) ) == 0 )
+		return true;
+
+	return false;
+}
+
+auto C_BaseEntity::IsCitadelObserverPawn() -> bool
+{
+	auto pszBindingName = GetSchemaClassBinding()->m_bindingName();
+
+	if ( pszBindingName && strcmp( pszBindingName , XorStr( "C_CitadelObserverPawn" ) ) == 0 )
+		return true;
+
+	return false;
+}
+
+auto C_BaseEntity::GetOrigin() -> const Vector3&
+{
+	auto pGameSceneNode = m_pGameSceneNode();
+
+	if ( !pGameSceneNode )
+		return Vector3::Zero;
+
+	return pGameSceneNode->m_vecAbsOrigin();
+}
+
+auto C_BaseEntity::GetBoneIdByName( const char* szName ) -> int
+{
+	return C_BaseEntity_GetBoneIdByName( this , szName );
+}
+
+auto C_BaseEntity::GetHitBoxSet() -> CHitBoxSet*
+{
+	return C_BaseEntity_GetHitBoxSet( this );
+}
+
+auto C_BaseModelEntity::GetBoundingBox( Rect_t& out ) -> bool
+{
+	Vector3 mins;
+	Vector3 maxs;
+
+	const auto absOrigin = GetOrigin();
+
+	mins = m_Collision().m_vecMins() + absOrigin;
+	maxs = m_Collision().m_vecMaxs() + absOrigin;
+
+#undef max
+#undef min
+
+	out.x = out.y = std::numeric_limits<float>::max();
+	out.w = out.h = -std::numeric_limits<float>::max();
+
+	for ( int i = 0; i < 8; ++i )
+	{
+		const Vector3 point_list[8] =
+		{
+		  Vector3( mins.m_x, mins.m_y, mins.m_z ), Vector3( mins.m_x, maxs.m_y, mins.m_z ),
+		  Vector3( maxs.m_x, maxs.m_y, mins.m_z ), Vector3( maxs.m_x, mins.m_y, mins.m_z ),
+		  Vector3( maxs.m_x, maxs.m_y, maxs.m_z ), Vector3( mins.m_x, maxs.m_y, maxs.m_z ),
+		  Vector3( mins.m_x, mins.m_y, maxs.m_z ), Vector3( maxs.m_x, mins.m_y, maxs.m_z )
+		};
+
+		const Vector3 Point = point_list[i];
+
+		ImVec2 Screen;
+
+		if ( !Math::WorldToScreen( Point , Screen ) )
+			return false;
+
+		out.x = std::min( out.x , Screen.x );
+		out.y = std::min( out.y , Screen.y );
+		out.w = std::max( out.w , Screen.x );
+		out.h = std::max( out.h , Screen.y );
+	}
+
+	return true;
+}

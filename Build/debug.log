@@ -1,0 +1,14 @@
+[+] StartCheatThread: E:\Pericles\Build\
+
+[+] CSDK_Loader::LoadSDK:
+
+
+[+] pSchemaSystem: 00007FF8552E6810
+[+] pEngineToClient: 00007FFFBD75CC30
+[+] pGameEntitySystem: 000003026E069000
+[+] pGameEntitySystem: 00007FF87A132B80
+[+] pSoundOpSystem: 00007FFFB2C14D80
+[+] pCUserCmdArray: 00007FFFA40B5BB0
+[+] pCVPhys2World: 00007FFFA40BFC40
+[+] pGlobalVarsBase: 00007FFFA37F3EC0
+

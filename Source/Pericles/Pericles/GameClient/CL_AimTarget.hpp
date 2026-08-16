@@ -1,0 +1,431 @@
+#pragma once
+
+#include <algorithm>
+#include <limits>
+#include <mutex>
+
+#include <ImGui/imgui.h>
+
+#include <DeadLock/SDK/Math/Math.hpp>
+#include <DeadLock/SDK/SDK.hpp>
+#include <DeadLock/SDK/Types/CEntityData.hpp>
+#include <DeadLock/SDK/Update/CGlobalVarsBase.hpp>
+
+#include <GameClient/CEntityCache/CEntityCache.hpp>
+#include <GameClient/CL_Bones.hpp>
+#include <GameClient/CL_Trace.hpp>
+
+#include <PericlesClient/Settings/Settings.hpp>
+
+struct AimTargetResult_t
+{
+	Vector3 m_WorldPosition;
+	ImVec2 m_ScreenPosition;
+	int m_EntityIndex = -1;
+	int m_Health = 0;
+};
+
+struct SoulTargetResult_t
+{
+	Vector3 m_WorldPosition;
+	ImVec2 m_ScreenPosition;
+	int m_EntityIndex = -1;
+};
+
+inline constexpr const char* g_AimTargetBones[] =
+{
+	"head",
+	"pelvis",
+	"spine_3",
+	"spine_0",
+	"arm_lower_L",
+	"arm_lower_R",
+	"leg_lower_L",
+	"leg_lower_R"
+};
+
+inline auto NormalizeAimBoneMask() -> int
+{
+	constexpr int ValidMask = ( 1 << static_cast<int>( std::size( g_AimTargetBones ) ) ) - 1;
+	int Mask = Settings::AimPreview::TargetBonesMask & ValidMask;
+	if ( Mask == 0 )
+		Mask = 1;
+	Settings::AimPreview::TargetBonesMask = Mask;
+	return Mask;
+}
+
+inline auto GetFirstSelectedAimBone() -> const char*
+{
+	const int Mask = NormalizeAimBoneMask();
+	for ( int Index = 0; Index < static_cast<int>( std::size( g_AimTargetBones ) ); ++Index )
+	{
+		if ( ( Mask & ( 1 << Index ) ) != 0 )
+			return g_AimTargetBones[Index];
+	}
+
+	return g_AimTargetBones[0];
+}
+
+inline auto GetRandomSelectedAimBone() -> const char*
+{
+	const int Mask = NormalizeAimBoneMask();
+	constexpr int HeadIndex = 0;
+	int OtherSelectedIndices[std::size( g_AimTargetBones )]{};
+	int OtherSelectedCount = 0;
+
+	for ( int Index = 1; Index < static_cast<int>( std::size( g_AimTargetBones ) ); ++Index )
+	{
+		if ( ( Mask & ( 1 << Index ) ) != 0 )
+			OtherSelectedIndices[OtherSelectedCount++] = Index;
+	}
+
+	static uint32_t RandomState = ( static_cast<uint32_t>( GetTickCount64() ) ^ 0x9E3779B9u ) | 1u;
+	const auto NextRandom = []() -> uint32_t
+	{
+		RandomState ^= RandomState << 13;
+		RandomState ^= RandomState >> 17;
+		RandomState ^= RandomState << 5;
+		return RandomState;
+	};
+
+	const bool bHeadSelected = ( Mask & ( 1 << HeadIndex ) ) != 0;
+	if ( bHeadSelected )
+	{
+		if ( OtherSelectedCount == 0 )
+			return g_AimTargetBones[HeadIndex];
+
+		const int HeadChance = std::clamp( Settings::AimPreview::HeadChance , 0 , 100 );
+		if ( static_cast<int>( NextRandom() % 100u ) < HeadChance )
+			return g_AimTargetBones[HeadIndex];
+	}
+
+	// The probability left after the head roll is shared uniformly by every
+	// other selected bone. If the head is not selected, all selected bones keep
+	// an equal probability.
+	return g_AimTargetBones[OtherSelectedIndices[NextRandom() % static_cast<uint32_t>( OtherSelectedCount )]];
+}
+
+inline auto AimEntityHasSkeleton( C_BaseEntity* pEntity ) -> bool
+{
+	auto* pBinding = pEntity ? pEntity->GetSchemaClassBinding() : nullptr;
+
+	for ( int Depth = 0; pBinding && Depth < 32; ++Depth )
+	{
+		const char* szBindingName = pBinding->m_bindingName();
+		if ( szBindingName && strcmp( szBindingName , "CBaseAnimGraph" ) == 0 )
+			return true;
+
+		auto* pBaseClass = pBinding->m_baseClass();
+		pBinding = pBaseClass ? pBaseClass->m_classInfo() : nullptr;
+	}
+
+	return false;
+}
+
+inline auto ResolveAimTargetPoint( C_BaseEntity* pEntity , const CachedEntity_t::Type Type , const char* szSelectedBone ) -> Vector3
+{
+	if ( !pEntity )
+		return {};
+
+	const bool bHero = Type == CachedEntity_t::CITADEL_PLAYER_CONTROLLER;
+	const bool bObjective = Type == CachedEntity_t::NPC_OBJECTIVE;
+	const char* HeroBoneNames[] =
+	{
+		szSelectedBone,
+		"head",
+		"head_end",
+		"neck_0",
+		"spine_1",
+		"chest"
+	};
+	const char* NpcHeadBoneNames[] =
+	{
+		"head",
+		"head_end",
+		"neck_0",
+		"eye_0",
+		"spine_1",
+		"chest"
+	};
+
+	if ( !bObjective && AimEntityHasSkeleton( pEntity ) )
+	{
+		const char* const* pBoneNames = bHero ? HeroBoneNames : NpcHeadBoneNames;
+		if ( GetCL_Bones()->PrepareEntityBones( pEntity ) )
+		{
+			for ( int BoneIndex = 0; BoneIndex < 6; ++BoneIndex )
+			{
+				const char* szBoneName = pBoneNames[BoneIndex];
+				if ( !szBoneName )
+					continue;
+
+				const Vector3 BonePosition = GetCL_Bones()->GetPreparedBonePositionByName( pEntity , szBoneName );
+				if ( !BonePosition.IsZero() )
+					return BonePosition;
+			}
+		}
+	}
+
+	// Static objectives do not always expose a humanoid skeleton. Their
+	// collision center is a stable target point and remains projected by the
+	// same screen-space FOV test as bones.
+	auto* pModelEntity = reinterpret_cast<C_BaseModelEntity*>( pEntity );
+	const Vector3 Mins = pModelEntity->m_Collision().m_vecMins();
+	const Vector3 Maxs = pModelEntity->m_Collision().m_vecMaxs();
+	return pEntity->GetOrigin() + ( Mins + Maxs ) * 0.5f;
+}
+
+inline auto FindBestAimTarget( CCitadelPlayerController* pLocalController , const char* szSelectedBone , AimTargetResult_t& OutTarget ) -> bool
+{
+	OutTarget = {};
+
+	if ( !pLocalController || !ImGui::GetCurrentContext() )
+		return false;
+
+	const ImVec2 DisplaySize = ImGui::GetIO().DisplaySize;
+	if ( DisplaySize.x <= 0.f || DisplaySize.y <= 0.f )
+		return false;
+
+	const ImVec2 ScreenCenter = DisplaySize * 0.5f;
+	const float FovRadius = static_cast<float>( std::clamp( Settings::AimPreview::FovRadius , 25 , 500 ) );
+	const float MaxDistanceSquared = FovRadius * FovRadius;
+	const uint8 LocalTeam = pLocalController->m_iTeamNum();
+	const int Priority = std::clamp( Settings::AimPreview::TargetPriority , 0 , 1 );
+	auto* pLocalPawn = pLocalController->m_hHeroPawn().Get<C_CitadelPlayerPawn>();
+	const Vector3 CameraPosition = pLocalPawn ? pLocalPawn->GetEyeOrigin() : Vector3{};
+
+	float BestDistanceSquared = std::numeric_limits<float>::max();
+	int BestHealth = std::numeric_limits<int>::max();
+	bool bFoundTarget = false;
+
+	const auto* pCachedEntities = GetEntityCache()->GetCachedEntity();
+	std::scoped_lock CacheLock( GetEntityCache()->GetLock() );
+
+	for ( const auto& CachedEntity : *pCachedEntities )
+	{
+		C_BaseEntity* pTargetEntity = nullptr;
+		int Health = 0;
+
+		switch ( CachedEntity.m_Type )
+		{
+			case CachedEntity_t::CITADEL_PLAYER_CONTROLLER:
+			{
+				if ( !Settings::AimPreview::TargetHeroes )
+					continue;
+
+				auto* pController = CachedEntity.m_Handle.Get<CCitadelPlayerController>();
+				if ( !pController || pController == pLocalController || !pController->IsAlive()
+					|| pController->m_iTeamNum() == LocalTeam )
+				{
+					continue;
+				}
+
+				pTargetEntity = pController->m_hHeroPawn().Get<C_CitadelPlayerPawn>();
+				Health = pController->m_PlayerDataGlobal().m_iHealth();
+				break;
+			}
+			case CachedEntity_t::NPC_TROOPER:
+				if ( !Settings::AimPreview::TargetTroopers )
+					continue;
+				pTargetEntity = CachedEntity.m_Handle.Get();
+				if ( !pTargetEntity || pTargetEntity->m_iTeamNum() == LocalTeam )
+					continue;
+				Health = pTargetEntity->m_iHealth();
+				break;
+			case CachedEntity_t::NPC_TROOPER_NEUTRAL:
+				if ( !Settings::AimPreview::TargetNeutrals )
+					continue;
+				pTargetEntity = CachedEntity.m_Handle.Get();
+				if ( !pTargetEntity )
+					continue;
+				Health = pTargetEntity->m_iHealth();
+				break;
+			case CachedEntity_t::NPC_CITADEL:
+				if ( !Settings::AimPreview::TargetNpcs )
+					continue;
+				pTargetEntity = CachedEntity.m_Handle.Get();
+				if ( !pTargetEntity || pTargetEntity->m_iTeamNum() == LocalTeam )
+					continue;
+				Health = pTargetEntity->m_iHealth();
+				break;
+			case CachedEntity_t::NPC_OBJECTIVE:
+				if ( !Settings::AimPreview::TargetObjectives )
+					continue;
+				pTargetEntity = CachedEntity.m_Handle.Get();
+				if ( !pTargetEntity || pTargetEntity->m_iTeamNum() == LocalTeam )
+					continue;
+				Health = pTargetEntity->m_iHealth();
+				break;
+			default:
+				continue;
+		}
+
+		if ( !pTargetEntity || Health <= 0 )
+			continue;
+
+		auto* pSceneNode = pTargetEntity->m_pGameSceneNode();
+		if ( !pSceneNode || pSceneNode->m_bDormant() )
+			continue;
+
+		const Vector3 TargetPosition = ResolveAimTargetPoint( pTargetEntity , CachedEntity.m_Type , szSelectedBone );
+		ImVec2 TargetScreen;
+		if ( TargetPosition.IsZero() || !Math::WorldToScreen( TargetPosition , TargetScreen ) )
+			continue;
+
+		const float DeltaX = TargetScreen.x - ScreenCenter.x;
+		const float DeltaY = TargetScreen.y - ScreenCenter.y;
+		const float DistanceSquared = DeltaX * DeltaX + DeltaY * DeltaY;
+		if ( DistanceSquared > MaxDistanceSquared )
+			continue;
+
+		if ( Settings::AimPreview::OnlyVisible
+			&& ( CameraPosition.IsZero()
+				|| !GetCL_Trace()->IsEntityVisibleAtPoint( CameraPosition , TargetPosition , pTargetEntity ) ) )
+		{
+			continue;
+		}
+
+		const bool bIsBetter = !bFoundTarget
+			|| ( Priority == 0 && DistanceSquared < BestDistanceSquared )
+			|| ( Priority == 1 && ( Health < BestHealth
+				|| ( Health == BestHealth && DistanceSquared < BestDistanceSquared ) ) );
+
+		if ( !bIsBetter )
+			continue;
+
+		bFoundTarget = true;
+		BestDistanceSquared = DistanceSquared;
+		BestHealth = Health;
+		OutTarget.m_WorldPosition = TargetPosition;
+		OutTarget.m_ScreenPosition = TargetScreen;
+		OutTarget.m_EntityIndex = CachedEntity.m_Handle.GetEntryIndex();
+		OutTarget.m_Health = Health;
+	}
+
+	return bFoundTarget;
+}
+
+inline auto FindBestAimTargetWithFallback( CCitadelPlayerController* pLocalController , const char* szPreferredBone , AimTargetResult_t& OutTarget ) -> bool
+{
+	if ( !pLocalController || !szPreferredBone || !ImGui::GetCurrentContext() )
+	{
+		OutTarget = {};
+		return false;
+	}
+
+	// Preserve the weighted/random choice whenever that bone has a valid target.
+	if ( FindBestAimTarget( pLocalController , szPreferredBone , OutTarget ) )
+		return true;
+
+	// The preferred bone may be outside the FOV, hidden or unavailable on the
+	// model. In that case compare every other selected bone instead of leaving
+	// the shot at the edge of the FOV.
+	const int Mask = NormalizeAimBoneMask();
+	const ImVec2 ScreenCenter = ImGui::GetIO().DisplaySize * 0.5f;
+	const int Priority = std::clamp( Settings::AimPreview::TargetPriority , 0 , 1 );
+	float BestDistanceSquared = std::numeric_limits<float>::max();
+	int BestHealth = std::numeric_limits<int>::max();
+	bool bFoundFallback = false;
+
+	for ( int Index = 0; Index < static_cast<int>( std::size( g_AimTargetBones ) ); ++Index )
+	{
+		if ( ( Mask & ( 1 << Index ) ) == 0 || strcmp( g_AimTargetBones[Index] , szPreferredBone ) == 0 )
+			continue;
+
+		AimTargetResult_t Candidate;
+		if ( !FindBestAimTarget( pLocalController , g_AimTargetBones[Index] , Candidate ) )
+			continue;
+
+		const float DeltaX = Candidate.m_ScreenPosition.x - ScreenCenter.x;
+		const float DeltaY = Candidate.m_ScreenPosition.y - ScreenCenter.y;
+		const float DistanceSquared = DeltaX * DeltaX + DeltaY * DeltaY;
+		const bool bIsBetter = !bFoundFallback
+			|| ( Priority == 0 && DistanceSquared < BestDistanceSquared )
+			|| ( Priority == 1 && ( Candidate.m_Health < BestHealth
+				|| ( Candidate.m_Health == BestHealth && DistanceSquared < BestDistanceSquared ) ) );
+
+		if ( !bIsBetter )
+			continue;
+
+		bFoundFallback = true;
+		BestDistanceSquared = DistanceSquared;
+		BestHealth = Candidate.m_Health;
+		OutTarget = Candidate;
+	}
+
+	return bFoundFallback;
+}
+
+inline auto FindBestSoulTarget( const Vector3& ShotOrigin , SoulTargetResult_t& OutTarget ) -> bool
+{
+	OutTarget = {};
+
+	if ( ShotOrigin.IsZero() || !ImGui::GetCurrentContext() )
+		return false;
+
+	auto* pGlobalVars = SDK::Pointers::GlobalVarsBase();
+	if ( !pGlobalVars )
+		return false;
+
+	const ImVec2 DisplaySize = ImGui::GetIO().DisplaySize;
+	if ( DisplaySize.x <= 0.f || DisplaySize.y <= 0.f )
+		return false;
+
+	const float CurrentTime = pGlobalVars->m_flCurrentTime();
+	const ImVec2 ScreenCenter = DisplaySize * 0.5f;
+	const float FovRadius = static_cast<float>( std::clamp( Settings::AimPreview::FovRadius , 25 , 500 ) );
+	const float MaxDistanceSquared = FovRadius * FovRadius;
+	float BestDistanceSquared = std::numeric_limits<float>::max();
+	bool bFoundTarget = false;
+
+	const auto* pCachedEntities = GetEntityCache()->GetCachedEntity();
+	std::scoped_lock CacheLock( GetEntityCache()->GetLock() );
+
+	for ( const auto& CachedEntity : *pCachedEntities )
+	{
+		if ( CachedEntity.m_Type != CachedEntity_t::ITEM_XP )
+			continue;
+
+		auto* pSoul = CachedEntity.m_Handle.Get<CItemXP>();
+		if ( !pSoul )
+			continue;
+
+		auto* pSceneNode = pSoul->m_pGameSceneNode();
+		if ( !pSceneNode || pSceneNode->m_bDormant() )
+			continue;
+
+		const float AttackableTime = pSoul->m_flAttackableTime();
+		const float EndAttackableTime = pSoul->m_flEndAttackableTime();
+		if ( AttackableTime <= 0.f || EndAttackableTime <= AttackableTime
+			|| CurrentTime < AttackableTime || CurrentTime > EndAttackableTime )
+		{
+			continue;
+		}
+
+		const Vector3 Mins = pSoul->m_Collision().m_vecMins();
+		const Vector3 Maxs = pSoul->m_Collision().m_vecMaxs();
+		const Vector3 SoulPosition = pSoul->GetOrigin() + ( Mins + Maxs ) * 0.5f;
+		ImVec2 SoulScreen;
+		if ( SoulPosition.IsZero() || !Math::WorldToScreen( SoulPosition , SoulScreen ) )
+			continue;
+
+		const float DeltaX = SoulScreen.x - ScreenCenter.x;
+		const float DeltaY = SoulScreen.y - ScreenCenter.y;
+		const float DistanceSquared = DeltaX * DeltaX + DeltaY * DeltaY;
+		if ( DistanceSquared > MaxDistanceSquared || DistanceSquared >= BestDistanceSquared )
+			continue;
+
+		// Soul steal fires without player input, so it must always require a
+		// clear shot, independently of the visibility option used by aim assist.
+		if ( !GetCL_Trace()->IsEntityVisibleAtPoint( ShotOrigin , SoulPosition , pSoul ) )
+			continue;
+
+		bFoundTarget = true;
+		BestDistanceSquared = DistanceSquared;
+		OutTarget.m_WorldPosition = SoulPosition;
+		OutTarget.m_ScreenPosition = SoulScreen;
+		OutTarget.m_EntityIndex = CachedEntity.m_Handle.GetEntryIndex();
+	}
+
+	return bFoundTarget;
+}

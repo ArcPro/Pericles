@@ -1,0 +1,1242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Pericles">
+      <UniqueIdentifier>{ce6291b9-10c1-4e46-aa84-1644a29e0f6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\Common">
+      <UniqueIdentifier>{5a418f8d-340b-4901-88c7-1c38c6e0f1c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\Common\Helpers">
+      <UniqueIdentifier>{a94774b3-6e9e-464f-b98d-0c8bacc72b02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\Common\Include">
+      <UniqueIdentifier>{88a6422c-8102-40e2-82a4-8c17a2ac413b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\Common\Include\Fnv1a">
+      <UniqueIdentifier>{f90159bd-1c6f-4c86-be9d-9f1d2e261303}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\Common\Include\FW1FontWrapper">
+      <UniqueIdentifier>{c98a0a77-6d94-4fe4-aa85-dd485f80d632}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\Common\Include\ImGui">
+      <UniqueIdentifier>{9021b927-b67b-4fb1-a73b-35ba1527408e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\Common\Include\lodepng">
+      <UniqueIdentifier>{fb0d9c8a-5960-4237-a87e-fad8dcc63cc7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\Common\Include\MinHook">
+      <UniqueIdentifier>{24decd41-df6e-42b4-be71-966c0c1b101e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\Common\Include\rapidjson">
+      <UniqueIdentifier>{f49fa931-6165-454f-a7e5-c2400f7aa777}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\Common\Include\rapidjson\error">
+      <UniqueIdentifier>{c5f37b65-e751-4b4e-b30e-50f796c4b4eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\Common\Include\rapidjson\internal">
+      <UniqueIdentifier>{324b73a8-48ee-429c-bd41-10cf6f6bc0e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\Common\Include\rapidjson\msinttypes">
+      <UniqueIdentifier>{419547b2-3994-4831-9242-41eda2d16afe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\Common\Include\stb">
+      <UniqueIdentifier>{e4aa30c2-0f87-493a-925d-2df56e6b99e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\Common\Include\SteamAPI">
+      <UniqueIdentifier>{2858daa7-926f-485a-928c-a81dae094f85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\Common\Include\XorStr">
+      <UniqueIdentifier>{826d4c99-b52f-4edc-a5fc-1d3b9ab3d019}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\Common\Include\MinHook\hde">
+      <UniqueIdentifier>{1d30522b-b8ae-4503-bdd4-f57648159da8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\Common\Include\ImGui\Misc">
+      <UniqueIdentifier>{e71613cb-ba0c-493b-b92e-d5889b391d72}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\Common\Include\ImGui\Misc\freetype">
+      <UniqueIdentifier>{48d68a25-c11d-4a82-9c29-47c03acc6051}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\DeadLock">
+      <UniqueIdentifier>{d16a5411-6564-4327-9885-5de6252daa53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\PericlesClient">
+      <UniqueIdentifier>{e874835d-38e8-442f-942c-de32f0ae4450}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\DeadLock\SDK">
+      <UniqueIdentifier>{3aaf5098-17f0-4798-b392-b909c103e5fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\DeadLock\SDK\Interface">
+      <UniqueIdentifier>{6d929d6c-5479-48e3-9380-fcaeed09e24b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\DeadLock\SDK\SDL3">
+      <UniqueIdentifier>{7e9cf81b-304e-4ed2-818b-4ca742667ac1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\DeadLock\SDK\AppFramework">
+      <UniqueIdentifier>{00f8c3d0-c0ca-40cf-88e8-8ce6f558d35d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\DeadLock\SDK\Math">
+      <UniqueIdentifier>{8640beb8-2ea8-46b1-abc0-d1d41511746f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\DeadLock\SDK\Types">
+      <UniqueIdentifier>{508a6132-0dcf-419a-92df-0c001a498616}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\DeadLock\SDK\Update">
+      <UniqueIdentifier>{18d017de-b848-4e29-8c5f-00e37eec85ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\DeadLock\Helpers">
+      <UniqueIdentifier>{0da9139b-e9fe-4cad-8390-0b9efa60a264}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\DeadLock\Hook">
+      <UniqueIdentifier>{0d9844e8-0b81-4a8d-afe5-ab0c2afc51df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\DeadLock\Protobuf">
+      <UniqueIdentifier>{6ff9140f-45bb-4185-9d48-cc2d435bc278}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\GameClient">
+      <UniqueIdentifier>{5da44460-eb37-4e28-9a8b-842450a8b43c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\GameClient\CEntityCache">
+      <UniqueIdentifier>{442c31f9-50dc-4fe7-bea6-e27ee9e2ddea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\DeadLock\SDK\Network">
+      <UniqueIdentifier>{019195fc-1327-44c6-8e9f-d3333ed1cb72}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\PericlesClient\Fonts">
+      <UniqueIdentifier>{ce467b80-b5c4-4f23-8b59-954b81aaab8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\PericlesClient\Render">
+      <UniqueIdentifier>{5bca2cd7-a1aa-47e6-be7f-3c4a1d4e9fa4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\PericlesClient\Features">
+      <UniqueIdentifier>{53f9676c-b08e-450d-8a7e-40f8c5bd9a35}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\PericlesClient\Features\CVisual">
+      <UniqueIdentifier>{f806415b-a98e-4abd-9fc2-63ea1eb460f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\PericlesClient\Settings">
+      <UniqueIdentifier>{c7f75051-5e69-48e1-8813-56da17749f55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\PericlesClient\GUI">
+      <UniqueIdentifier>{3321a827-1837-474d-8835-3f9349c91f1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\PericlesClient\Resources">
+      <UniqueIdentifier>{9851bbe9-76dd-43fe-82c4-9ad36d374320}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\PericlesClient\Resources\UI_Sounds">
+      <UniqueIdentifier>{3bf93ab9-8ffd-40c3-8e21-21156c3a1f22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pericles\PericlesClient\Helpers">
+      <UniqueIdentifier>{139c7d41-0e35-48a4-92f6-05418db6e7d9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Pericles\Common\Include\Config.hpp">
+      <Filter>Pericles\Common\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\ft2build.h">
+      <Filter>Pericles\Common\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\allocators.h">
+      <Filter>Pericles\Common\Include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\cursorstreamwrapper.h">
+      <Filter>Pericles\Common\Include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\document.h">
+      <Filter>Pericles\Common\Include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\encodedstream.h">
+      <Filter>Pericles\Common\Include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\encodings.h">
+      <Filter>Pericles\Common\Include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\filereadstream.h">
+      <Filter>Pericles\Common\Include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\filewritestream.h">
+      <Filter>Pericles\Common\Include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\fwd.h">
+      <Filter>Pericles\Common\Include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\istreamwrapper.h">
+      <Filter>Pericles\Common\Include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\memorybuffer.h">
+      <Filter>Pericles\Common\Include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\memorystream.h">
+      <Filter>Pericles\Common\Include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\ostreamwrapper.h">
+      <Filter>Pericles\Common\Include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\pointer.h">
+      <Filter>Pericles\Common\Include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\prettywriter.h">
+      <Filter>Pericles\Common\Include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\rapidjson.h">
+      <Filter>Pericles\Common\Include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\reader.h">
+      <Filter>Pericles\Common\Include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\schema.h">
+      <Filter>Pericles\Common\Include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\stream.h">
+      <Filter>Pericles\Common\Include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\stringbuffer.h">
+      <Filter>Pericles\Common\Include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\uri.h">
+      <Filter>Pericles\Common\Include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\writer.h">
+      <Filter>Pericles\Common\Include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\msinttypes\inttypes.h">
+      <Filter>Pericles\Common\Include\rapidjson\msinttypes</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\msinttypes\stdint.h">
+      <Filter>Pericles\Common\Include\rapidjson\msinttypes</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\internal\biginteger.h">
+      <Filter>Pericles\Common\Include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\internal\clzll.h">
+      <Filter>Pericles\Common\Include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\internal\diyfp.h">
+      <Filter>Pericles\Common\Include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\internal\dtoa.h">
+      <Filter>Pericles\Common\Include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\internal\ieee754.h">
+      <Filter>Pericles\Common\Include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\internal\itoa.h">
+      <Filter>Pericles\Common\Include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\internal\meta.h">
+      <Filter>Pericles\Common\Include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\internal\pow10.h">
+      <Filter>Pericles\Common\Include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\internal\regex.h">
+      <Filter>Pericles\Common\Include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\internal\stack.h">
+      <Filter>Pericles\Common\Include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\internal\strfunc.h">
+      <Filter>Pericles\Common\Include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\internal\strtod.h">
+      <Filter>Pericles\Common\Include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\internal\swap.h">
+      <Filter>Pericles\Common\Include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\error\en.h">
+      <Filter>Pericles\Common\Include\rapidjson\error</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\rapidjson\error\error.h">
+      <Filter>Pericles\Common\Include\rapidjson\error</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\stb\stb_image.h">
+      <Filter>Pericles\Common\Include\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamapplist.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamapps.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamappticket.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamclient.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamcontroller.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamdualsense.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamfriends.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamgamecoordinator.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamgameserver.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamgameserverstats.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamhtmlsurface.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamhttp.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteaminput.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteaminventory.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteammatchmaking.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteammusic.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteammusicremote.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamnetworking.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamnetworkingmessages.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamnetworkingsockets.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamnetworkingutils.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamparentalsettings.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamps3overlayrenderer.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamremoteplay.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamremotestorage.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamscreenshots.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamugc.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamuser.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamuserstats.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamutils.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\isteamvideo.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\matchmakingtypes.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\steam_api.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\steam_api_common.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\steam_api_flat.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\steam_api_internal.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\steam_gameserver.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\steamclientpublic.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\steamencryptedappticket.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\steamhttpenums.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\steamnetworkingfakeip.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\steamnetworkingtypes.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\steamps3params.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\steamtypes.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\SteamAPI\steamuniverse.h">
+      <Filter>Pericles\Common\Include\SteamAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\XorStr\XorStr.hpp">
+      <Filter>Pericles\Common\Include\XorStr</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\MinHook\hde\hde32.h">
+      <Filter>Pericles\Common\Include\MinHook\hde</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\MinHook\hde\hde64.h">
+      <Filter>Pericles\Common\Include\MinHook\hde</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\MinHook\hde\pstdint.h">
+      <Filter>Pericles\Common\Include\MinHook\hde</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\MinHook\hde\table32.h">
+      <Filter>Pericles\Common\Include\MinHook\hde</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\MinHook\hde\table64.h">
+      <Filter>Pericles\Common\Include\MinHook\hde</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\MinHook\buffer.h">
+      <Filter>Pericles\Common\Include\MinHook</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\MinHook\MinHook.h">
+      <Filter>Pericles\Common\Include\MinHook</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\MinHook\trampoline.h">
+      <Filter>Pericles\Common\Include\MinHook</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\lodepng\lodepng.h">
+      <Filter>Pericles\Common\Include\lodepng</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\ImGui\imconfig.h">
+      <Filter>Pericles\Common\Include\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\ImGui\imgui.h">
+      <Filter>Pericles\Common\Include\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\ImGui\imgui_impl_dx11.h">
+      <Filter>Pericles\Common\Include\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\ImGui\imgui_impl_win32.h">
+      <Filter>Pericles\Common\Include\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\ImGui\imgui_internal.h">
+      <Filter>Pericles\Common\Include\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\ImGui\imstb_rectpack.h">
+      <Filter>Pericles\Common\Include\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\ImGui\imstb_textedit.h">
+      <Filter>Pericles\Common\Include\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\ImGui\imstb_truetype.h">
+      <Filter>Pericles\Common\Include\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\ImGui\Misc\freetype\imgui_freetype.h">
+      <Filter>Pericles\Common\Include\ImGui\Misc\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\FW1FontWrapper\CFW1ColorRGBA.h">
+      <Filter>Pericles\Common\Include\FW1FontWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\FW1FontWrapper\CFW1DWriteRenderTarget.h">
+      <Filter>Pericles\Common\Include\FW1FontWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\FW1FontWrapper\CFW1Factory.h">
+      <Filter>Pericles\Common\Include\FW1FontWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\FW1FontWrapper\CFW1FontWrapper.h">
+      <Filter>Pericles\Common\Include\FW1FontWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\FW1FontWrapper\CFW1GlyphAtlas.h">
+      <Filter>Pericles\Common\Include\FW1FontWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\FW1FontWrapper\CFW1GlyphProvider.h">
+      <Filter>Pericles\Common\Include\FW1FontWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\FW1FontWrapper\CFW1GlyphRenderStates.h">
+      <Filter>Pericles\Common\Include\FW1FontWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\FW1FontWrapper\CFW1GlyphSheet.h">
+      <Filter>Pericles\Common\Include\FW1FontWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\FW1FontWrapper\CFW1GlyphVertexDrawer.h">
+      <Filter>Pericles\Common\Include\FW1FontWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\FW1FontWrapper\CFW1Object.h">
+      <Filter>Pericles\Common\Include\FW1FontWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\FW1FontWrapper\CFW1StateSaver.h">
+      <Filter>Pericles\Common\Include\FW1FontWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\FW1FontWrapper\CFW1TextGeometry.h">
+      <Filter>Pericles\Common\Include\FW1FontWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\FW1FontWrapper\CFW1TextRenderer.h">
+      <Filter>Pericles\Common\Include\FW1FontWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\FW1FontWrapper\FW1CompileSettings.h">
+      <Filter>Pericles\Common\Include\FW1FontWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\FW1FontWrapper\FW1FontWrapper.h">
+      <Filter>Pericles\Common\Include\FW1FontWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\FW1FontWrapper\FW1Precompiled.h">
+      <Filter>Pericles\Common\Include\FW1FontWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Include\Fnv1a\Hash_Fnv1a_Constexpr.hpp">
+      <Filter>Pericles\Common\Include\Fnv1a</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Helpers\ModuleLoaderHelper.hpp">
+      <Filter>Pericles\Common\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Helpers\StringHelper.hpp">
+      <Filter>Pericles\Common\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Base64.h">
+      <Filter>Pericles\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\CDelay.hpp">
+      <Filter>Pericles\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\Common.hpp">
+      <Filter>Pericles\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\CrashLog.hpp">
+      <Filter>Pericles\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\DevLog.hpp">
+      <Filter>Pericles\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\Common\MemoryEngine.hpp">
+      <Filter>Pericles\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DllLauncher.hpp">
+      <Filter>Pericles</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DllMain.hpp">
+      <Filter>Pericles</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\CBasePattern.hpp">
+      <Filter>Pericles\DeadLock</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\CHook_Loader.hpp">
+      <Filter>Pericles\DeadLock</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\CSDK_Loader.hpp">
+      <Filter>Pericles\DeadLock</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\CFunctionList.hpp">
+      <Filter>Pericles\DeadLock\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\CSchemaOffset.hpp">
+      <Filter>Pericles\DeadLock\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\FunctionListSDK.hpp">
+      <Filter>Pericles\DeadLock\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\SDK.hpp">
+      <Filter>Pericles\DeadLock\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Interface\IEngineToClient.hpp">
+      <Filter>Pericles\DeadLock\SDK\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Interface\Interface.hpp">
+      <Filter>Pericles\DeadLock\SDK\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\SDL3\SDL3_Functions.hpp">
+      <Filter>Pericles\DeadLock\SDK\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\AppFramework\IAppSystem.hpp">
+      <Filter>Pericles\DeadLock\SDK\AppFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Interface\CShemaSystemSDK.hpp">
+      <Filter>Pericles\DeadLock\SDK\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Math\Math.hpp">
+      <Filter>Pericles\DeadLock\SDK\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Math\Matrix.hpp">
+      <Filter>Pericles\DeadLock\SDK\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Math\QAngle.hpp">
+      <Filter>Pericles\DeadLock\SDK\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Math\Rect_t.hpp">
+      <Filter>Pericles\DeadLock\SDK\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Math\Vector2.hpp">
+      <Filter>Pericles\DeadLock\SDK\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Math\Vector3.hpp">
+      <Filter>Pericles\DeadLock\SDK\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Math\Vector4.hpp">
+      <Filter>Pericles\DeadLock\SDK\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Types\CBaseTypes.hpp">
+      <Filter>Pericles\DeadLock\SDK\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Types\CEntityData.hpp">
+      <Filter>Pericles\DeadLock\SDK\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Types\CHandle.hpp">
+      <Filter>Pericles\DeadLock\SDK\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Types\Color.hpp">
+      <Filter>Pericles\DeadLock\SDK\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Types\CStrongHandle.hpp">
+      <Filter>Pericles\DeadLock\SDK\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Types\CUtlFixedMemory.hpp">
+      <Filter>Pericles\DeadLock\SDK\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Types\CUtlLinkedList.hpp">
+      <Filter>Pericles\DeadLock\SDK\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Types\CUtlMap.hpp">
+      <Filter>Pericles\DeadLock\SDK\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Types\CUtlMemory.hpp">
+      <Filter>Pericles\DeadLock\SDK\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Types\CUtlString.hpp">
+      <Filter>Pericles\DeadLock\SDK\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Types\CUtlStringToken.hpp">
+      <Filter>Pericles\DeadLock\SDK\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Types\CUtlSymbol.hpp">
+      <Filter>Pericles\DeadLock\SDK\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Types\CUtlSymbolLarge.hpp">
+      <Filter>Pericles\DeadLock\SDK\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Types\CUtlVector.hpp">
+      <Filter>Pericles\DeadLock\SDK\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Types\TIer0Memory.hpp">
+      <Filter>Pericles\DeadLock\SDK\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Interface\CGameEntitySystem.hpp">
+      <Filter>Pericles\DeadLock\SDK\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Hook\Hook_CreateSwapChain.hpp">
+      <Filter>Pericles\DeadLock\Hook</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Hook\Hook_FireEventClientSide.hpp">
+      <Filter>Pericles\DeadLock\Hook</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Hook\Hook_Present.hpp">
+      <Filter>Pericles\DeadLock\Hook</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Hook\Hook_ResizeBuffers.hpp">
+      <Filter>Pericles\DeadLock\Hook</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\PericlesClient\CPericlesClient.hpp">
+      <Filter>Pericles\PericlesClient</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Interface\IGameEvent.hpp">
+      <Filter>Pericles\DeadLock\SDK\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\PericlesClient\CPericlesGUI.hpp">
+      <Filter>Pericles\PericlesClient</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Hook\Hook_IsRelativeMouseMode.hpp">
+      <Filter>Pericles\DeadLock\Hook</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Hook\Hook_MouseInputEnabled.hpp">
+      <Filter>Pericles\DeadLock\Hook</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Interface\CInputSystem.hpp">
+      <Filter>Pericles\DeadLock\SDK\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Hook\Hook_OnAddEntity.hpp">
+      <Filter>Pericles\DeadLock\Hook</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Hook\Hook_OnRemoveEntity.hpp">
+      <Filter>Pericles\DeadLock\Hook</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\GameClient\CEntityCache\CEntityCache.hpp">
+      <Filter>Pericles\GameClient\CEntityCache</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Update\Offsets.hpp">
+      <Filter>Pericles\DeadLock\SDK\Update</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Update\CUserCmd.hpp">
+      <Filter>Pericles\DeadLock\SDK\Update</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\base_gcmessages.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\base_modifier.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\c_peer2peer_netmessages.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\citadel_clientmessages.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\citadel_gameevents.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\citadel_gamemessages.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\citadel_gcmessages_client.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\citadel_gcmessages_common.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\citadel_gcmessages_server.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\citadel_usercmd.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\citadel_usermessages.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\clientmessages.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\connectionless_netmessages.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\demo.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\econ_gcmessages.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\econ_shared_enums.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\engine_gcmessages.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\enums_clientserver.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\gameevents.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\gcsdk_gcmessages.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\gcsystemmsgs.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\netmessages.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\network_connection.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\networkbasetypes.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\networksystem_protomessages.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\prediction_events.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\steamdatagram_messages_auth.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\steamdatagram_messages_sdr.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\steammessages.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\steammessages_cloud.steamworkssdk.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\steammessages_gamenetworkingui.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\steammessages_helprequest.steamworkssdk.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\steammessages_int.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\steammessages_oauth.steamworkssdk.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\steammessages_player.steamworkssdk.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\steammessages_publishedfile.steamworkssdk.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\steammessages_steamlearn.steamworkssdk.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\steammessages_unified_base.steamworkssdk.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\steamnetworkingsockets_messages.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\steamnetworkingsockets_messages_certs.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\steamnetworkingsockets_messages_udp.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\te.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\uifontfile_format.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\usercmd.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\usermessages.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\valveextensions.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Update\CCitadelInput.hpp">
+      <Filter>Pericles\DeadLock\SDK\Update</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\GameClient\CL_CitadelPlayerController.hpp">
+      <Filter>Pericles\GameClient</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Hook\Hook_CreateMove.hpp">
+      <Filter>Pericles\DeadLock\Hook</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Hook\Hook_ParseMessage.hpp">
+      <Filter>Pericles\DeadLock\Hook</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Network\CNetworkMessages.hpp">
+      <Filter>Pericles\DeadLock\SDK\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Interface\CSoundOpSystem.hpp">
+      <Filter>Pericles\DeadLock\SDK\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\PericlesClient\Fonts\CFont.hpp">
+      <Filter>Pericles\PericlesClient\Fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\PericlesClient\Fonts\CFontManager.hpp">
+      <Filter>Pericles\PericlesClient\Fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\PericlesClient\Render\CRender.hpp">
+      <Filter>Pericles\PericlesClient\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\PericlesClient\Render\CRenderStackSystem.hpp">
+      <Filter>Pericles\PericlesClient\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Hook\Hook_OnClientOutput.hpp">
+      <Filter>Pericles\DeadLock\Hook</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\PericlesClient\Features\CVisual\CVisual.hpp">
+      <Filter>Pericles\PericlesClient\Features\CVisual</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\PericlesClient\Settings\Settings.hpp">
+      <Filter>Pericles\PericlesClient\Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\PericlesClient\GUI\CPericlesMenu.hpp">
+      <Filter>Pericles\PericlesClient\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\PericlesClient\Fonts\FontAwesomeIcon.hpp">
+      <Filter>Pericles\PericlesClient\Fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\PericlesClient\Resources\UI_Sounds\UI_Click.hpp">
+      <Filter>Pericles\PericlesClient\Resources\UI_Sounds</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\PericlesClient\Resources\UI_Sounds\UI_Hover.hpp">
+      <Filter>Pericles\PericlesClient\Resources\UI_Sounds</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\PericlesClient\Helpers\CPlayUISound.hpp">
+      <Filter>Pericles\PericlesClient\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\PericlesClient\Settings\CSettingsJson.hpp">
+      <Filter>Pericles\PericlesClient\Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\GameClient\CL_CitadelPlayerPawn.hpp">
+      <Filter>Pericles\GameClient</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\GameClient\CL_Bones.hpp">
+      <Filter>Pericles\GameClient</Filter>
+    </ClInclude>
+	<ClInclude Include="Pericles\GameClient\CL_AimTarget.hpp">
+	  <Filter>Pericles\GameClient</Filter>
+	</ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Hook\Hook_GetMatricesForView.hpp">
+      <Filter>Pericles\DeadLock\Hook</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\Protobuf\source2_steam_stats.pb.h">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\GameClient\CL_Trace.hpp">
+      <Filter>Pericles\GameClient</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\GameClient\CL_VisibleCheck.hpp">
+      <Filter>Pericles\GameClient</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Update\GameTrace.hpp">
+      <Filter>Pericles\DeadLock\SDK\Update</Filter>
+    </ClInclude>
+    <ClInclude Include="Pericles\DeadLock\SDK\Update\CGlobalVarsBase.hpp">
+      <Filter>Pericles\DeadLock\SDK\Update</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Pericles\Common\Include\MinHook\hde\hde32.c">
+      <Filter>Pericles\Common\Include\MinHook\hde</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\Common\Include\MinHook\hde\hde64.c">
+      <Filter>Pericles\Common\Include\MinHook\hde</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\Common\Include\MinHook\buffer.c">
+      <Filter>Pericles\Common\Include\MinHook</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\Common\Include\MinHook\MinHook.c">
+      <Filter>Pericles\Common\Include\MinHook</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\Common\Include\MinHook\trampoline.c">
+      <Filter>Pericles\Common\Include\MinHook</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\Common\Include\lodepng\lodepng.cpp">
+      <Filter>Pericles\Common\Include\lodepng</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\Common\Include\ImGui\imgui.cpp">
+      <Filter>Pericles\Common\Include\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\Common\Include\ImGui\imgui_draw.cpp">
+      <Filter>Pericles\Common\Include\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\Common\Include\ImGui\imgui_impl_dx11.cpp">
+      <Filter>Pericles\Common\Include\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\Common\Include\ImGui\imgui_impl_win32.cpp">
+      <Filter>Pericles\Common\Include\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\Common\Include\ImGui\imgui_tables.cpp">
+      <Filter>Pericles\Common\Include\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\Common\Include\ImGui\imgui_widgets.cpp">
+      <Filter>Pericles\Common\Include\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\Common\Include\ImGui\Misc\freetype\imgui_freetype.cpp">
+      <Filter>Pericles\Common\Include\ImGui\Misc\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\Common\Helpers\ModuleLoaderHelper.cpp">
+      <Filter>Pericles\Common\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\Common\Helpers\StringHelper.cpp">
+      <Filter>Pericles\Common\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\Common\Base64.cpp">
+      <Filter>Pericles\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\Common\CrashLog.cpp">
+      <Filter>Pericles\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\Common\DevLog.cpp">
+      <Filter>Pericles\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\Common\MemoryEngine.cpp">
+      <Filter>Pericles\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DllLauncher.cpp">
+      <Filter>Pericles</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DllMain.cpp">
+      <Filter>Pericles</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\CBasePattern.cpp">
+      <Filter>Pericles\DeadLock</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\CHook_Loader.cpp">
+      <Filter>Pericles\DeadLock</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\CSDK_Loader.cpp">
+      <Filter>Pericles\DeadLock</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\SDK\CFunctionList.cpp">
+      <Filter>Pericles\DeadLock\SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\SDK\CSchemaOffset.cpp">
+      <Filter>Pericles\DeadLock\SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\SDK\SDK.cpp">
+      <Filter>Pericles\DeadLock\SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\SDK\Interface\Interface.cpp">
+      <Filter>Pericles\DeadLock\SDK\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\SDK\SDL3\SDL3_Functions.cpp">
+      <Filter>Pericles\DeadLock\SDK\SDL3</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\SDK\Math\Math.cpp">
+      <Filter>Pericles\DeadLock\SDK\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\SDK\Math\Matrix.cpp">
+      <Filter>Pericles\DeadLock\SDK\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\SDK\Math\QAngle.cpp">
+      <Filter>Pericles\DeadLock\SDK\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\SDK\Math\Vector3.cpp">
+      <Filter>Pericles\DeadLock\SDK\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\SDK\Math\Vector4.cpp">
+      <Filter>Pericles\DeadLock\SDK\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\SDK\Types\CEntityData.cpp">
+      <Filter>Pericles\DeadLock\SDK\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\SDK\Types\CHandle.cpp">
+      <Filter>Pericles\DeadLock\SDK\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Hook\Hook_CreateSwapChain.cpp">
+      <Filter>Pericles\DeadLock\Hook</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Hook\Hook_FireEventClientSide.cpp">
+      <Filter>Pericles\DeadLock\Hook</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Hook\Hook_Present.cpp">
+      <Filter>Pericles\DeadLock\Hook</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Hook\Hook_ResizeBuffers.cpp">
+      <Filter>Pericles\DeadLock\Hook</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\PericlesClient\CPericlesClient.cpp">
+      <Filter>Pericles\PericlesClient</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\SDK\Interface\IGameEvent.cpp">
+      <Filter>Pericles\DeadLock\SDK\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\PericlesClient\CPericlesGUI.cpp">
+      <Filter>Pericles\PericlesClient</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Hook\Hook_IsRelativeMouseMode.cpp">
+      <Filter>Pericles\DeadLock\Hook</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Hook\Hook_MouseInputEnabled.cpp">
+      <Filter>Pericles\DeadLock\Hook</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Hook\Hook_OnAddEntity.cpp">
+      <Filter>Pericles\DeadLock\Hook</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Hook\Hook_OnRemoveEntity.cpp">
+      <Filter>Pericles\DeadLock\Hook</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\GameClient\CEntityCache\CEntityCache.cpp">
+      <Filter>Pericles\GameClient\CEntityCache</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\base_gcmessages.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\base_modifier.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\c_peer2peer_netmessages.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\citadel_clientmessages.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\citadel_gameevents.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\citadel_gamemessages.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\citadel_gcmessages_client.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\citadel_gcmessages_common.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\citadel_gcmessages_server.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\citadel_usercmd.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\citadel_usermessages.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\clientmessages.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\connectionless_netmessages.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\demo.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\econ_gcmessages.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\econ_shared_enums.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\engine_gcmessages.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\enums_clientserver.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\gameevents.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\gcsdk_gcmessages.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\gcsystemmsgs.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\netmessages.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\network_connection.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\networkbasetypes.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\networksystem_protomessages.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\prediction_events.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\steamdatagram_messages_auth.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\steamdatagram_messages_sdr.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\steammessages.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\steammessages_cloud.steamworkssdk.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\steammessages_gamenetworkingui.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\steammessages_helprequest.steamworkssdk.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\steammessages_int.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\steammessages_oauth.steamworkssdk.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\steammessages_player.steamworkssdk.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\steammessages_publishedfile.steamworkssdk.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\steammessages_steamlearn.steamworkssdk.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\steammessages_unified_base.steamworkssdk.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\steamnetworkingsockets_messages.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\steamnetworkingsockets_messages_certs.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\steamnetworkingsockets_messages_udp.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\te.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\uifontfile_format.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\usercmd.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\usermessages.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\valveextensions.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\GameClient\CL_CitadelPlayerController.cpp">
+      <Filter>Pericles\GameClient</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Hook\Hook_CreateMove.cpp">
+      <Filter>Pericles\DeadLock\Hook</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Hook\Hook_ParseMessage.cpp">
+      <Filter>Pericles\DeadLock\Hook</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\PericlesClient\Fonts\CFont.cpp">
+      <Filter>Pericles\PericlesClient\Fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\PericlesClient\Fonts\CFontManager.cpp">
+      <Filter>Pericles\PericlesClient\Fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\PericlesClient\Render\CRender.cpp">
+      <Filter>Pericles\PericlesClient\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\PericlesClient\Render\CRenderStackSystem.cpp">
+      <Filter>Pericles\PericlesClient\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Hook\Hook_OnClientOutput.cpp">
+      <Filter>Pericles\DeadLock\Hook</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\PericlesClient\Features\CVisual\CVisual.cpp">
+      <Filter>Pericles\PericlesClient\Features\CVisual</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\PericlesClient\GUI\CPericlesMenu.cpp">
+      <Filter>Pericles\PericlesClient\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\PericlesClient\Helpers\CPlayUISound.cpp">
+      <Filter>Pericles\PericlesClient\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\PericlesClient\Settings\CSettingsJson.cpp">
+      <Filter>Pericles\PericlesClient\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\GameClient\CL_CitadelPlayerPawn.cpp">
+      <Filter>Pericles\GameClient</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\GameClient\CL_Bones.cpp">
+      <Filter>Pericles\GameClient</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Hook\Hook_GetMatricesForView.cpp">
+      <Filter>Pericles\DeadLock\Hook</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\DeadLock\Protobuf\source2_steam_stats.pb.cc">
+      <Filter>Pericles\DeadLock\Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\GameClient\CL_Trace.cpp">
+      <Filter>Pericles\GameClient</Filter>
+    </ClCompile>
+    <ClCompile Include="Pericles\GameClient\CL_VisibleCheck.cpp">
+      <Filter>Pericles\GameClient</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
