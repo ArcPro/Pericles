@@ -1,0 +1,43 @@
+<UserControl x:Class="Launcher.Views.LoginView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Loaded="LoginView_Loaded">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="28" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="18" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="16" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="22" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="Bienvenue" FontSize="30" FontWeight="SemiBold" />
+            <TextBlock Text="Connectez-vous pour accéder à Pericles." Margin="0,9,0,0"
+                       Foreground="{StaticResource MutedTextBrush}" FontSize="13" />
+        </StackPanel>
+
+        <StackPanel Grid.Row="2">
+            <TextBlock Text="EMAIL" Style="{StaticResource FieldLabelStyle}" />
+            <TextBox x:Name="EmailInput" MaxLength="254" TextChanged="Input_Changed" />
+        </StackPanel>
+
+        <StackPanel Grid.Row="4">
+            <TextBlock Text="MOT DE PASSE" Style="{StaticResource FieldLabelStyle}" />
+            <PasswordBox x:Name="PasswordInput" MaxLength="1024" PasswordChanged="Input_Changed"
+                         KeyDown="PasswordInput_KeyDown" />
+        </StackPanel>
+
+        <Border x:Name="ErrorContainer" Grid.Row="6" Padding="12,10" CornerRadius="7"
+                Background="#2A1820" BorderBrush="#65303F" BorderThickness="1" Visibility="Collapsed">
+            <TextBlock x:Name="ErrorText" Foreground="{StaticResource ErrorBrush}" FontSize="12" TextWrapping="Wrap" />
+        </Border>
+
+        <Button x:Name="LoginButton" Grid.Row="8" Content="SE CONNECTER"
+                Style="{StaticResource PrimaryButtonStyle}" Click="LoginButton_Click" IsDefault="True" />
+    </Grid>
+</UserControl>

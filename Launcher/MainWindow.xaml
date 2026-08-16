@@ -1,0 +1,46 @@
+<Window x:Class="Launcher.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="clr-namespace:Launcher.Views"
+        Title="Pericles" Width="460" Height="560" MinWidth="420" MinHeight="540"
+        WindowStartupLocation="CenterScreen" WindowStyle="None" AllowsTransparency="True"
+        ResizeMode="NoResize" Background="Transparent">
+    <Border Margin="16" CornerRadius="16" Background="{StaticResource SurfaceBrush}"
+            BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="28" ShadowDepth="8" Opacity="0.42" Color="#050308" />
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="52" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="42" />
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0" Background="Transparent" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="44" />
+                    <ColumnDefinition Width="44" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="18,0,0,0">
+                    <Border Width="28" Height="28" CornerRadius="8" Background="{StaticResource AccentBrush}">
+                        <TextBlock Text="P" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="15" FontWeight="Bold" />
+                    </Border>
+                    <TextBlock Text="PERICLES" Margin="10,0,0,0" VerticalAlignment="Center" FontSize="13" FontWeight="Bold" />
+                </StackPanel>
+                <Button Grid.Column="1" Content="—" Click="Minimize_Click" Background="Transparent" Foreground="{StaticResource MutedTextBrush}" BorderThickness="0" FontSize="14" Cursor="Hand" />
+                <Button Grid.Column="2" Content="×" Click="Close_Click" Background="Transparent" Foreground="{StaticResource MutedTextBrush}" BorderThickness="0" FontSize="20" Cursor="Hand" />
+            </Grid>
+            <Grid Grid.Row="1">
+                <views:LoginView x:Name="LoginPanel" Width="352" HorizontalAlignment="Center" VerticalAlignment="Center" LoginRequested="LoginPanel_LoginRequested" />
+                <views:AuthenticatedView x:Name="AuthenticatedPanel" Visibility="Collapsed"
+                                         LogoutRequested="AuthenticatedPanel_LogoutRequested"
+                                         DeviceRevokeRequested="AuthenticatedPanel_DeviceRevokeRequested"
+                                         ActivationRequested="AuthenticatedPanel_ActivationRequested"
+                                         GameActionRequested="AuthenticatedPanel_GameActionRequested"
+                                         RefreshRequested="AuthenticatedPanel_RefreshRequested" />
+            </Grid>
+            <TextBlock Grid.Row="2" Text="Version 0.1.0" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#6F6879" FontSize="11" />
+        </Grid>
+    </Border>
+</Window>

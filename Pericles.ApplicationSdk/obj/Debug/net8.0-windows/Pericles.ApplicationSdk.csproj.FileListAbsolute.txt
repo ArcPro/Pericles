@@ -1,0 +1,11 @@
+E:\Pericles\Launcher\Pericles.ApplicationSdk\bin\Debug\net8.0-windows\Pericles.ApplicationSdk.deps.json
+E:\Pericles\Launcher\Pericles.ApplicationSdk\bin\Debug\net8.0-windows\Pericles.ApplicationSdk.dll
+E:\Pericles\Launcher\Pericles.ApplicationSdk\bin\Debug\net8.0-windows\Pericles.ApplicationSdk.pdb
+E:\Pericles\Launcher\Pericles.ApplicationSdk\obj\Debug\net8.0-windows\Pericles.ApplicationSdk.GeneratedMSBuildEditorConfig.editorconfig
+E:\Pericles\Launcher\Pericles.ApplicationSdk\obj\Debug\net8.0-windows\Pericles.ApplicationSdk.AssemblyInfoInputs.cache
+E:\Pericles\Launcher\Pericles.ApplicationSdk\obj\Debug\net8.0-windows\Pericles.ApplicationSdk.AssemblyInfo.cs
+E:\Pericles\Launcher\Pericles.ApplicationSdk\obj\Debug\net8.0-windows\Pericles.ApplicationSdk.csproj.CoreCompileInputs.cache
+E:\Pericles\Launcher\Pericles.ApplicationSdk\obj\Debug\net8.0-windows\Pericles.ApplicationSdk.dll
+E:\Pericles\Launcher\Pericles.ApplicationSdk\obj\Debug\net8.0-windows\refint\Pericles.ApplicationSdk.dll
+E:\Pericles\Launcher\Pericles.ApplicationSdk\obj\Debug\net8.0-windows\Pericles.ApplicationSdk.pdb
+E:\Pericles\Launcher\Pericles.ApplicationSdk\obj\Debug\net8.0-windows\ref\Pericles.ApplicationSdk.dll
