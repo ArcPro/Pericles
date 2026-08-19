@@ -95,7 +95,9 @@ public sealed class NamedPipeApplicationChannel(
             ModuleResultPayload result = IpcProtocol.ReadPayload<ModuleResultPayload>(response);
             if (response.MessageType == IpcProtocol.ModuleLoaded && result.Code is "loaded" or "already_loaded")
             {
-                logger.LogInformation("Module loaded successfully by the owned application.");
+                logger.LogInformation(
+                    "Module loaded successfully into game process {GameProcessId} via the owned application.",
+                    gameProcessId);
                 return new ModuleLoadResult(result.Game, result.Version, result.Code);
             }
             if (result.Code == "restart_required") throw new ModuleRestartRequiredException();

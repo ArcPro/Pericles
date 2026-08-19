@@ -1,5 +1,7 @@
 // DllMain.cpp
-#include <windows.h>
+#include "DllMain.hpp"
+#include "DllLauncher.hpp"
+
 #include <fstream>
 #include <ctime>
 
@@ -9,7 +11,9 @@ BOOL WINAPI DllMain(HINSTANCE hInstace, DWORD dwReason, LPVOID lpReserved)
     std::ofstream log("E:\\Pericles\\Pericles_Load.log", std::ios::app);
     if (log.is_open()) {
         time_t now = time(nullptr);
-        log << ctime(&now) << " - DllMain called, reason=" << dwReason << "\n";
+        char timestamp[26] = {};
+        ctime_s(timestamp, sizeof(timestamp), &now);
+        log << timestamp << " - DllMain called, reason=" << dwReason << "\n";
         log.close();
     }
 

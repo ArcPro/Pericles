@@ -1,4 +1,6 @@
 using System.Net.Http;
+using System.IO;
+using System.Text;
 using Launcher.Application;
 using Launcher.Authentication;
 using Launcher.Configuration;
@@ -25,12 +27,23 @@ public partial class App : System.Windows.Application
     {
         base.OnStartup(e);
 
+        if (ModuleHostMode.IsRequested(e.Args))
+        {
+            ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown;
+            int exitCode = await ModuleHostMode.RunAsync(e.Args);
+            Shutdown(exitCode);
+            return;
+        }
+
+        DispatcherUnhandledException += OnDispatcherUnhandledException;
+
         var settings = new HostApplicationBuilderSettings
         {
             Args = e.Args,
             ContentRootPath = AppContext.BaseDirectory
         };
         HostApplicationBuilder builder = Host.CreateApplicationBuilder(settings);
+        AddEmbeddedConfiguration(builder.Configuration);
 
         builder.Services
             .AddOptions<ApiOptions>()
@@ -101,6 +114,7 @@ public partial class App : System.Windows.Application
         builder.Services.AddTransient<IAuthenticationService, ApiAuthenticationService>();
         builder.Services.AddSingleton<ISessionService, SessionService>();
         builder.Services.AddSingleton<IDeviceKeyStore, WindowsDpapiDeviceKeyStore>();
+        builder.Services.AddSingleton<IHardwareFingerprintProvider, WindowsHardwareFingerprintProvider>();
         builder.Services.AddSingleton<IDeviceIdentityService, DeviceIdentityService>();
         builder.Services.AddSingleton<IDeviceSignatureService, DeviceSignatureService>();
         builder.Services.AddSingleton<DeviceVerificationState>();
@@ -135,6 +149,47 @@ public partial class App : System.Windows.Application
             client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
             client.DefaultRequestHeaders.UserAgent.ParseAdd("PericlesLauncher/0.4");
         }
+    }
+
+    private static void AddEmbeddedConfiguration(ConfigurationManager configuration)
+    {
+        using Stream stream = typeof(App).Assembly.GetManifestResourceStream("Launcher.appsettings.json")
+            ?? throw new InvalidOperationException("The embedded launcher configuration is missing.");
+        configuration.AddJsonStream(stream);
+    }
+
+    private void OnDispatcherUnhandledException(
+        object sender,
+        System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+    {
+        string logPath = WriteStartupFailure(e.Exception);
+        System.Windows.MessageBox.Show(
+            $"Pericles n'a pas pu démarrer. Le diagnostic a été enregistré dans :\n{logPath}",
+            "Erreur de démarrage Pericles",
+            System.Windows.MessageBoxButton.OK,
+            System.Windows.MessageBoxImage.Error);
+        e.Handled = true;
+        Shutdown(1);
+    }
+
+    private static string WriteStartupFailure(Exception exception)
+    {
+        string directory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Pericles",
+            "Logs");
+        string path = Path.Combine(directory, "launcher-startup.log");
+        try
+        {
+            Directory.CreateDirectory(directory);
+            string entry = $"[{DateTimeOffset.Now:O}] {exception}{Environment.NewLine}";
+            File.AppendAllText(path, entry, Encoding.UTF8);
+        }
+        catch
+        {
+            // Reporting a startup failure must not hide the original error dialog.
+        }
+        return path;
     }
 
     protected override void OnExit(System.Windows.ExitEventArgs e)

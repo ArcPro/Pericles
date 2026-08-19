@@ -133,6 +133,33 @@ final class DeviceServiceTest extends TestCase
             $this->database->query('SELECT challenge_hash FROM device_challenges')->fetchColumn());
     }
 
+    public function testHardwareIdMigrationKeepsTheSameDeviceRow(): void
+    {
+        $key = $this->createKeyPair();
+        $this->register(1, str_repeat('a', 32), $key['public']);
+        $originalRowId = (int) $this->database->query('SELECT id FROM devices')->fetchColumn();
+
+        $device = $this->devices->migrateHardwareId(1, $originalRowId, str_repeat('b', 32));
+
+        self::assertSame(str_repeat('b', 32), $device['device_id']);
+        self::assertSame($originalRowId, (int) $this->database->query('SELECT id FROM devices')->fetchColumn());
+        self::assertSame(str_repeat('b', 32), $this->database->query('SELECT device_id FROM devices')->fetchColumn());
+    }
+
+    public function testHardwareIdMigrationRejectsAnExistingIdentity(): void
+    {
+        $firstKey = $this->createKeyPair();
+        $secondKey = $this->createKeyPair();
+        $this->register(1, str_repeat('a', 32), $firstKey['public']);
+        $this->register(1, str_repeat('b', 32), $secondKey['public']);
+
+        $this->assertApiError(
+            fn () => $this->devices->migrateHardwareId(1, 1, str_repeat('b', 32)),
+            'device_claimed',
+            409
+        );
+    }
+
     public function testChallengeExpires(): void
     {
         [$key, $challenge] = $this->registeredChallenge();

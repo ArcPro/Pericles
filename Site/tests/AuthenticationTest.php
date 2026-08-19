@@ -32,6 +32,7 @@ final class AuthenticationTest extends TestCase
                 email TEXT NOT NULL UNIQUE,
                 password_hash TEXT NOT NULL,
                 status TEXT NOT NULL DEFAULT 'active',
+                display_name TEXT,
                 created_at TEXT,
                 updated_at TEXT
             );
@@ -164,6 +165,46 @@ final class AuthenticationTest extends TestCase
         $this->sessions->revoke($token);
 
         $this->assertApiError(fn () => $this->sessions->currentUser($token), 'invalid_token', 401);
+    }
+
+    public function testRegisterCreatesActiveAccount(): void
+    {
+        $user = $this->auth->register('  NEW@PERICLES.LOCAL  ', 'CorrectPassword!', 'Ada');
+        $stored = $this->database->query('SELECT email, status, display_name FROM users WHERE id = ' . (int) $user['id'])->fetch();
+
+        self::assertSame('new@pericles.local', $user['email']);
+        self::assertSame('active', $user['status']);
+        self::assertSame('new@pericles.local', $stored['email']);
+        self::assertSame('Ada', $stored['display_name']);
+        $this->auth->authenticate('new@pericles.local', 'CorrectPassword!');
+    }
+
+    public function testRegisterRejectsDuplicateEmail(): void
+    {
+        $this->createUser('test@pericles.local', 'CorrectPassword!');
+        $this->assertApiError(
+            fn () => $this->auth->register('TEST@pericles.local', 'AnotherPass1'),
+            'email_taken',
+            409
+        );
+    }
+
+    public function testRegisterRejectsShortPassword(): void
+    {
+        $this->assertApiError(
+            fn () => $this->auth->register('new@pericles.local', 'short'),
+            'validation_error',
+            400
+        );
+    }
+
+    public function testRegisterRejectsInvalidEmail(): void
+    {
+        $this->assertApiError(
+            fn () => $this->auth->register('not-an-email', 'CorrectPassword!'),
+            'validation_error',
+            400
+        );
     }
 
     public function testRateLimiterBlocksAfterConfiguredFailures(): void

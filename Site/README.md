@@ -1,6 +1,6 @@
 # Pericles PHP API — Phase 5
 
-API PHP 8.2/MySQL du launcher Pericles. Le document root Apache recommandé est `Site/public`. Toutes les routes modules exigent un Bearer token dont la session est liée à un appareil cryptographiquement vérifié.
+PHP 8.2/MySQL API for the Pericles launcher. The recommended Apache document root is `Site/public`. Every module route requires a Bearer token whose session is linked to a cryptographically verified device.
 
 ## Installation
 
@@ -10,7 +10,7 @@ Copy-Item .env.example .env
 php bin/migrate.php
 ```
 
-Configuration modules :
+Module configuration:
 
 ```env
 MODULE_TICKET_TTL=30
@@ -22,18 +22,18 @@ MODULE_SIGNING_KEY_ID=pericles-modules-2026-01
 MODULE_SIGNING_PRIVATE_KEY_PATH=/secure/path/module-signing-private.pem
 ```
 
-La clé privée doit rester hors de Git et hors du webroot. La clé présente dans `tests/Fixtures` est exclusivement une clé de test automatisé.
+The private key must remain outside Git and the webroot. The key stored under `tests/Fixtures` is exclusively intended for automated tests.
 
-## Endpoints Phase 5
+## Phase 5 endpoints
 
-| Méthode | Route | Description |
+| Method | Route | Description |
 |---|---|---|
-| `POST` | `/api/v1/modules/ticket` | Recalcule le droit et émet un ticket court hashé en base |
-| `GET` | `/api/v1/modules/download` | Exige Bearer + `X-Module-Ticket`, consomme le ticket et retourne un paquet signé/chiffré |
+| `POST` | `/api/v1/modules/ticket` | Revalidates access and issues a short-lived ticket stored as a hash |
+| `GET` | `/api/v1/modules/download` | Requires Bearer + `X-Module-Ticket`, consumes the ticket, and returns a signed/encrypted package |
 
-La réponse de téléchargement a le type `application/vnd.pericles.module-package`, interdit le cache et transporte la clé AES aléatoire de ce téléchargement dans `X-Module-Session-Key` en Base64URL. Aucun ticket n’est placé dans l’URL.
+The download response uses the `application/vnd.pericles.module-package` content type, disables caching, and carries the random AES key for that download in `X-Module-Session-Key` as Base64URL. Tickets are never placed in URLs.
 
-## Administration
+## Module administration
 
 ```powershell
 php bin/generate-module-signing-key.php <private-path> <public-path>
@@ -41,16 +41,16 @@ php bin/publish-module.php deadlock <source-file> 1.0.0
 php bin/activate-module-version.php deadlock 1.0.0
 ```
 
-Les modules publiés sont conservés dans `storage/modules/<game>/<version>/Module.dll`, jamais sous `public`. La publication crée une version `draft`; l’activation transactionnelle sélectionne l’unique version active.
+Published modules are stored in `storage/modules/<game>/<version>/Module.dll`, never under `public`. Publishing creates a `draft` version; transactional activation selects the only active version.
 
-## Sécurité du ticket et du paquet
+## Ticket and package security
 
-- ticket : 32 octets CSPRNG, Base64URL, seulement SHA-256 en base, TTL configurable, user/device/game/version-bound;
-- consommation : transaction, `SELECT ... FOR UPDATE`, update conditionnel et audit `module_downloads`;
-- revalidation : utilisateur, device, jeu, module, version, subscription et binding au téléchargement;
-- payload : AES-256-GCM, clé 32 octets/nonce 12 octets/tag 16 octets frais par téléchargement;
-- authenticité : ECDSA P-256/SHA-256, signature DER couvrant manifeste, nonce, tag et ciphertext;
-- intégrité finale : SHA-256 et taille du plaintext contrôlés par le launcher.
+- ticket: 32 CSPRNG bytes, Base64URL, only SHA-256 stored in the database, configurable TTL, bound to user/device/game/version;
+- consumption: transaction, `SELECT ... FOR UPDATE`, conditional update, and audit in `module_downloads`;
+- revalidation: user, device, game, module, version, subscription, and binding at download time;
+- payload: AES-256-GCM with a fresh 32-byte key, 12-byte nonce, and 16-byte tag for each download;
+- authenticity: ECDSA P-256/SHA-256 DER signature covering the manifest, nonce, tag, and ciphertext;
+- final integrity: launcher verification of the plaintext SHA-256 digest and size.
 
 ## Tests
 
@@ -58,4 +58,24 @@ Les modules publiés sont conservés dans `storage/modules/<game>/<version>/Modu
 composer test
 ```
 
-Les tests utilisent SQLite en mémoire et `Fixtures/TestModule.bin`. Le test .NET complémentaire appelle `tests/build_module_package_fixture.php` pour valider l’interopérabilité réelle PHP/OpenSSL → C#.
+Tests use in-memory SQLite and `Fixtures/TestModule.bin`. The complementary .NET test calls `tests/build_module_package_fixture.php` to validate real PHP/OpenSSL → C# interoperability.
+
+## Administration panel and permissions
+
+Run migrations after pulling these changes. Migrations `006_roles_admin.sql` and `007_english_labels.sql` create the RBAC system, audit log, and English persisted labels.
+
+```powershell
+php bin/migrate.php
+```
+
+- `admin`: full access to accounts, roles, licenses, HWIDs, and audit logs;
+- `moderator`: account visibility plus license/device unlinking;
+- ungraded player: no access to `/admin`.
+
+Promote the first administrator from the command line to prevent privilege escalation through the web interface:
+
+```powershell
+php tools/set-role.php admin@example.com admin
+```
+
+Further role changes can be made from the Control Center. Every sensitive action is checked server-side and recorded in `admin_audit_logs`.

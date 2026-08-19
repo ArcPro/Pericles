@@ -41,6 +41,9 @@ public sealed class DeviceVerificationServiceTests
             KeyAlgorithm = "ECDSA-P256",
             CreatedAt = DateTimeOffset.UtcNow
         });
+
+        public Task CompleteHardwareIdMigrationAsync(DeviceIdentity identity, CancellationToken cancellationToken) =>
+            Task.CompletedTask;
     }
 
     private sealed class RecordingSignatureService : IDeviceSignatureService
@@ -73,6 +76,12 @@ public sealed class DeviceVerificationServiceTests
             Verified = true;
             return Task.FromResult(new DeviceVerificationResponse(true, DateTimeOffset.UtcNow));
         }
+
+        public Task<DeviceRegistrationResponse> MigrateHardwareIdAsync(
+            string deviceId,
+            string accessToken,
+            CancellationToken cancellationToken) =>
+            Task.FromResult(new DeviceRegistrationResponse(Info(true)));
 
         public Task<IReadOnlyList<DeviceInfo>> GetDevicesAsync(string currentDeviceId, string accessToken, CancellationToken cancellationToken) =>
             Task.FromResult<IReadOnlyList<DeviceInfo>>([Info(true)]);

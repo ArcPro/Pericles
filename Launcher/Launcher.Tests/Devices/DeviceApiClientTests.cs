@@ -46,6 +46,25 @@ public sealed class DeviceApiClientTests
     }
 
     [Fact]
+    public async Task HardwareIdMigrationUsesDedicatedEndpoint()
+    {
+        string? path = null;
+        string? body = null;
+        var client = CreateClient(async request =>
+        {
+            path = request.RequestUri?.AbsolutePath;
+            body = await request.Content!.ReadAsStringAsync();
+            return Json(HttpStatusCode.OK, DeviceResponseJson());
+        });
+
+        await client.MigrateHardwareIdAsync(new string('a', 32), "token", CancellationToken.None);
+
+        Assert.EndsWith("/devices/migrate-hardware-id", path);
+        using JsonDocument document = JsonDocument.Parse(body!);
+        Assert.Equal(new string('a', 32), document.RootElement.GetProperty("device_id").GetString());
+    }
+
+    [Fact]
     public Task DeviceLimitErrorHandled() => AssertDeviceError(
         "device_limit_reached",
         DeviceApiError.DeviceLimitReached);

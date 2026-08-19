@@ -29,6 +29,8 @@ public sealed class DeviceIdentityServiceTests : IDisposable
 
         Assert.True(Guid.TryParseExact(identity.DeviceId, "N", out _));
         Assert.Equal(DeviceIdentity.EcdsaP256Algorithm, identity.KeyAlgorithm);
+        Assert.Equal(new string('a', 32), identity.DeviceId);
+        Assert.Equal(1, identity.HardwareIdVersion);
         Assert.True(File.Exists(Path.Combine(_directory, "device.json")));
         Assert.True(File.Exists(Path.Combine(_directory, "device.key")));
     }
@@ -42,6 +44,50 @@ public sealed class DeviceIdentityServiceTests : IDisposable
         Assert.Equal(first.DeviceId, second.DeviceId);
         Assert.Equal(first.PublicKey, second.PublicKey);
         Assert.Equal(first.CreatedAt, second.CreatedAt);
+    }
+
+    [Fact]
+    public async Task LegacyRandomIdentityMigratesToHardwareIdAndKeepsSigningKey()
+    {
+        var keyStore = CreateKeyStore();
+        DeviceIdentity original = await CreateIdentityService(keyStore).GetOrCreateAsync(CancellationToken.None);
+        var legacy = new DeviceIdentity
+        {
+            SchemaVersion = original.SchemaVersion,
+            DeviceId = new string('b', 32),
+            PublicKey = original.PublicKey,
+            KeyAlgorithm = original.KeyAlgorithm,
+            CreatedAt = original.CreatedAt
+        };
+        string identityPath = Path.Combine(_directory, "device.json");
+        await File.WriteAllTextAsync(
+            identityPath,
+            JsonSerializer.Serialize(legacy, new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+
+        DeviceIdentityService service = CreateIdentityService(keyStore);
+        DeviceIdentity migrated = await service.GetOrCreateAsync(CancellationToken.None);
+
+        Assert.Equal(new string('a', 32), migrated.DeviceId);
+        Assert.Equal(new string('b', 32), migrated.PreviousDeviceId);
+        Assert.Equal(original.PublicKey, migrated.PublicKey);
+
+        await service.CompleteHardwareIdMigrationAsync(migrated, CancellationToken.None);
+        DeviceIdentity completed = await service.GetOrCreateAsync(CancellationToken.None);
+        Assert.Null(completed.PreviousDeviceId);
+        Assert.Equal(new string('a', 32), completed.DeviceId);
+    }
+
+    [Fact]
+    public void WindowsHardwareFingerprintIsStableAndServerCompatible()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        var provider = new WindowsHardwareFingerprintProvider();
+
+        string first = provider.GetDeviceId();
+        string second = provider.GetDeviceId();
+
+        Assert.Equal(first, second);
+        Assert.Matches("^[a-f0-9]{32}$", first);
     }
 
     [Fact]
@@ -193,8 +239,14 @@ public sealed class DeviceIdentityServiceTests : IDisposable
 
     private DeviceIdentityService CreateIdentityService(IDeviceKeyStore? keyStore = null) => new(
         keyStore ?? CreateKeyStore(),
+        new FakeHardwareFingerprintProvider(),
         Options.Create(_options),
         NullLogger<DeviceIdentityService>.Instance);
+
+    private sealed class FakeHardwareFingerprintProvider : IHardwareFingerprintProvider
+    {
+        public string GetDeviceId() => new('a', 32);
+    }
 
     private static string FindRepositoryFile(string relativePath)
     {

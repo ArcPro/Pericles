@@ -18,6 +18,15 @@
         <Style x:Key="GhostButtonStyle" TargetType="Button">
             <Setter Property="Height" Value="38"/><Setter Property="Padding" Value="16,0"/><Setter Property="Background" Value="#17131F"/>
             <Setter Property="Foreground" Value="#C7A8FF"/><Setter Property="BorderBrush" Value="#5A3C83"/><Setter Property="BorderThickness" Value="1"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+                <Border x:Name="B" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4">
+                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                </Border>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="B" Property="Opacity" Value="0.86"/></Trigger>
+                    <Trigger Property="IsEnabled" Value="False"><Setter TargetName="B" Property="Background" Value="#211D29"/><Setter TargetName="B" Property="BorderBrush" Value="#40374D"/><Setter Property="Foreground" Value="#8D8598"/><Setter Property="Cursor" Value="Arrow"/></Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate></Setter.Value></Setter>
         </Style>
         <Style x:Key="ActionButtonStyle" TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
             <Setter Property="Background" Value="#7137D6"/><Setter Property="Foreground" Value="White"/><Setter Property="BorderBrush" Value="#9D68F5"/>

@@ -137,8 +137,8 @@ CREATE TABLE IF NOT EXISTS activation_attempts (
 
 INSERT INTO games (slug, name, short_description, image_url, is_active, sort_order, created_at, updated_at)
 VALUES
-    ('deadlock', 'Deadlock', 'Shooter tactique en équipe.', 'https://cdn.medal.tv/asset/games/deadlock/thumbnail-1776536278620.jpg?width=800&height=800', 1, 10, UTC_TIMESTAMP(), UTC_TIMESTAMP()),
-    ('counter-strike-2', 'Counter-Strike 2', 'FPS compétitif tactique.', 'https://cdn.medal.tv/asset/games/counter-strike-2/cover-1717452418342.jpg?width=800&height=800', 1, 20, UTC_TIMESTAMP(), UTC_TIMESTAMP())
+    ('deadlock', 'Deadlock', 'Team-based tactical shooter.', 'https://cdn.medal.tv/asset/games/deadlock/thumbnail-1776536278620.jpg?width=800&height=800', 1, 10, UTC_TIMESTAMP(), UTC_TIMESTAMP()),
+    ('counter-strike-2', 'Counter-Strike 2', 'Competitive tactical FPS.', 'https://cdn.medal.tv/asset/games/counter-strike-2/cover-1717452418342.jpg?width=800&height=800', 1, 20, UTC_TIMESTAMP(), UTC_TIMESTAMP())
 ON DUPLICATE KEY UPDATE
     name = VALUES(name), short_description = VALUES(short_description), image_url = VALUES(image_url),
     is_active = VALUES(is_active), sort_order = VALUES(sort_order), updated_at = UTC_TIMESTAMP();
@@ -158,9 +158,9 @@ INSERT INTO plans (product_id, slug, name, duration_days, is_lifetime, is_active
 SELECT p.id, seed.slug, seed.name, seed.duration_days, seed.is_lifetime, 1, UTC_TIMESTAMP(), UTC_TIMESTAMP()
 FROM products p
 INNER JOIN (
-    SELECT '30-days' AS slug, '30 jours' AS name, 30 AS duration_days, 0 AS is_lifetime
-    UNION ALL SELECT '90-days', '90 jours', 90, 0
-    UNION ALL SELECT 'lifetime', 'À vie', NULL, 1
+    SELECT '30-days' AS slug, '30 days' AS name, 30 AS duration_days, 0 AS is_lifetime
+    UNION ALL SELECT '90-days', '90 days', 90, 0
+    UNION ALL SELECT 'lifetime', 'Lifetime', NULL, 1
 ) seed
 WHERE p.slug IN ('deadlock', 'counter-strike-2')
 ON DUPLICATE KEY UPDATE

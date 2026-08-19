@@ -11,9 +11,14 @@
 
 // Project Buid Config:
 
+#if defined(_DEBUG)
+#define ENABLE_CONSOLE_DEBUG		1
+#else
+#define ENABLE_CONSOLE_DEBUG		0
+#endif
+
 #ifdef RELEASE_BUILD
 
-#define ENABLE_CONSOLE_DEBUG		1
 #define ENABLE_CPP_EH_EXCEPTION		0
 
 #define LOG_SDK						1

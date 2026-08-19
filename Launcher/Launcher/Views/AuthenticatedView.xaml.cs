@@ -357,9 +357,11 @@ public partial class AuthenticatedView : UserControl
         if (!_gameButtons.TryGetValue(gameSlug, out List<Button>? buttons)) return;
         foreach (Button button in buttons)
         {
-            button.IsEnabled = !busy && !_activeGames.Contains(gameSlug);
             if (button.Tag is GameInfo game)
             {
+                button.IsEnabled = !busy
+                    && !_activeGames.Contains(gameSlug)
+                    && game.Access.State != GameAccessState.BoundElsewhere;
                 button.Content = busy
                     ? "PRÉPARATION..."
                     : _activeGames.Contains(gameSlug) ? "● ACTIF" : ActionText(game.Access.State);

@@ -14,4 +14,8 @@ public sealed class DeviceIdentity
     public required string KeyAlgorithm { get; init; }
 
     public required DateTimeOffset CreatedAt { get; init; }
+
+    public int? HardwareIdVersion { get; init; }
+
+    public string? PreviousDeviceId { get; init; }
 }

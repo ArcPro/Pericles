@@ -114,10 +114,22 @@ public sealed class RuntimeModuleStore : IRuntimeModuleStore
         }
     }
 
-    internal Task TryReleaseAsync(RuntimeModuleHandle module)
+    internal async Task TryReleaseAsync(RuntimeModuleHandle module)
     {
+        RuntimeMetadata? metadata = await ReadMetadataAsync(
+            module.SessionDirectory,
+            CancellationToken.None).ConfigureAwait(false);
+        if (metadata?.ProcessId is int processId
+            && metadata.ProcessStartedAt is DateTimeOffset processStartedAt
+            && IsSameProcessActive(processId, processStartedAt))
+        {
+            _logger.LogDebug(
+                "Runtime module retained while application process {ProcessId} is active.",
+                processId);
+            return;
+        }
+
         TryDeleteSessionDirectory(module.SessionDirectory);
-        return Task.CompletedTask;
     }
 
     private async Task WriteMetadataAsync(

@@ -10,8 +10,17 @@ public sealed class ApplicationConfigurationService(IConfiguration configuration
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(gameSlug);
         IConfigurationSection section = configuration.GetSection("Games").GetSection(gameSlug);
-        string path = Environment.ExpandEnvironmentVariables(section["ApplicationPath"] ?? "").Trim();
-        string processName = (section["ProcessName"] ?? "").Trim();
+        string configuredPath = Environment.ExpandEnvironmentVariables(section["ApplicationPath"] ?? "").Trim();
+        bool isSelfHosted = string.Equals(configuredPath, "$self", StringComparison.OrdinalIgnoreCase);
+        string path = isSelfHosted ? Environment.ProcessPath ?? "" : configuredPath;
+        string configuredProcessName = (section["ProcessName"] ?? "").Trim();
+        if (isSelfHosted && string.Equals(configuredProcessName, "$self", StringComparison.OrdinalIgnoreCase))
+        {
+            configuredProcessName = Path.GetFileName(path);
+        }
+        string processName = configuredProcessName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
+            ? configuredProcessName[..^4]
+            : configuredProcessName;
         string pipeName = (section["PipeName"] ?? "").Trim();
         string identity = (section["ApplicationIdentity"] ?? "").Trim();
         string? entryPoint = string.IsNullOrWhiteSpace(section["EntryPoint"]) ? null : section["EntryPoint"]!.Trim();
@@ -52,8 +61,9 @@ public sealed class ApplicationConfigurationService(IConfiguration configuration
             gameExecutableRelativePaths,
             identity,
             Path.GetFullPath(path),
-            Path.GetFileNameWithoutExtension(processName),
+            processName,
             pipeName,
-            entryPoint);
+            entryPoint,
+            isSelfHosted);
     }
 }

@@ -19,9 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="appsettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Remove="appsettings.json" />
+    <EmbeddedResource Include="appsettings.json" LogicalName="Launcher.appsettings.json" />
   </ItemGroup>
 
   <ItemGroup>

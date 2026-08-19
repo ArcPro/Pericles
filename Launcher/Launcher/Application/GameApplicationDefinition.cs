@@ -9,7 +9,8 @@ public sealed record GameApplicationDefinition(
     string ApplicationPath,
     string ProcessName,
     string PipeName,
-    string? EntryPoint);
+    string? EntryPoint,
+    bool IsSelfHosted = false);
 
 public sealed record ApplicationInstance(
     string ExecutablePath,

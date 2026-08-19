@@ -127,7 +127,7 @@ static bool InjectLibrary(DWORD processId, const std::string& dllPath)
         return false;
     }
 
-    FARPROC loadLibrary = GetProcAddress(hKernel32, "LoadLibraryA");
+    FARPROC loadLibrary = GetProcAddress(hKernel32, "LoadLibraryW");
     if (!loadLibrary)
     {
         VirtualFreeEx(hProcess, alloc, 0, MEM_RELEASE);

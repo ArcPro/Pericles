@@ -1,0 +1,404 @@
+Mon Aug 17 01:58:40 2026
+ - OnDllMain - Start, lpReserved=0000000000000000
+Mon Aug 17 01:58:40 2026
+ - OnDllMain - ModuleFileName: C:\Users\ghost\AppData\Local\Pericles\Runtime\f0e05648c88246228681bc9fe461d9c3\module.dll
+Mon Aug 17 01:58:40 2026
+ - OnDllMain - Final DllDir: C:\Users\ghost\AppData\Local\Pericles\Runtime\f0e05648c88246228681bc9fe461d9c3\
+Mon Aug 17 01:58:40 2026
+ - OnDllMain - Final DllDir: C:\Users\ghost\AppData\Local\Pericles\Runtime\f0e05648c88246228681bc9fe461d9c3\
+Mon Aug 17 01:58:40 2026
+ - OnDllMain - Creating StartCheatThread
+Mon Aug 17 01:58:40 2026
+ - OnDllMain - CreateThread succeeded, handle=0000000000000208
+Mon Aug 17 01:58:40 2026
+ - StartCheatTheard - BEGIN
+Mon Aug 17 01:58:40 2026
+ - StartCheatTheard - DllDir: C:\Users\ghost\AppData\Local\Pericles\Runtime\f0e05648c88246228681bc9fe461d9c3\
+Mon Aug 17 01:58:42 2026
+ - StartCheatTheard - After sleep
+Mon Aug 17 01:58:42 2026
+ - StartCheatTheard - DevLog initialized
+Mon Aug 17 01:58:42 2026
+ - StartCheatTheard - CrashLog initialized
+Mon Aug 17 01:58:42 2026
+ - StartCheatTheard - Step 1: InitalizeMH
+Mon Aug 17 01:58:42 2026
+ - Step 1: InitalizeMH OK
+Mon Aug 17 01:58:42 2026
+ - Step 2: FunctionList::OnInit
+Mon Aug 17 01:59:00 2026
+ - Step 2: FunctionList::OnInit OK
+Mon Aug 17 01:59:00 2026
+ - Step 3: CSDK_Loader::LoadSDK
+Mon Aug 17 01:59:02 2026
+ - Step 3: CSDK_Loader::LoadSDK OK
+Mon Aug 17 01:59:02 2026
+ - Step 4: Hook_Loader::InstallSecondHook
+Mon Aug 17 01:59:02 2026
+ - Step 4: Hook_Loader::InstallSecondHook OK
+Mon Aug 17 01:59:02 2026
+ - Step 5: Loading settings
+Mon Aug 17 01:59:02 2026
+ - Step 5: Settings loaded OK
+Mon Aug 17 01:59:02 2026
+ - Step 6: Waiting for GUI initialization
+Mon Aug 17 01:59:03 2026
+ - Step 6: GUI initialized OK
+Mon Aug 17 01:59:03 2026
+ - Step 7: PericlesClient::OnInit
+Mon Aug 17 01:59:03 2026
+ - Step 7: PericlesClient::OnInit OK
+Mon Aug 17 01:59:03 2026
+ - StartCheatTheard - END SUCCESS
+Mon Aug 17 03:10:52 2026
+ - OnDestroy - Start
+Mon Aug 17 03:10:52 2026
+ - OnDestroy - End
+Mon Aug 17 14:09:39 2026
+ - OnDllMain - Start, lpReserved=0000000000000000
+Mon Aug 17 14:09:39 2026
+ - OnDllMain - ModuleFileName: C:\Users\ghost\AppData\Local\Pericles\Runtime\a2589421517843a49ed0e3ad225c553d\module.dll
+Mon Aug 17 14:09:39 2026
+ - OnDllMain - Final DllDir: C:\Users\ghost\AppData\Local\Pericles\Runtime\a2589421517843a49ed0e3ad225c553d\
+Mon Aug 17 14:09:39 2026
+ - OnDllMain - Final DllDir: C:\Users\ghost\AppData\Local\Pericles\Runtime\a2589421517843a49ed0e3ad225c553d\
+Mon Aug 17 14:09:39 2026
+ - OnDllMain - Creating StartCheatThread
+Mon Aug 17 14:09:39 2026
+ - OnDllMain - CreateThread succeeded, handle=0000000000000240
+Mon Aug 17 14:09:39 2026
+ - StartCheatTheard - BEGIN
+Mon Aug 17 14:09:39 2026
+ - StartCheatTheard - DllDir: C:\Users\ghost\AppData\Local\Pericles\Runtime\a2589421517843a49ed0e3ad225c553d\
+Mon Aug 17 14:09:41 2026
+ - StartCheatTheard - After sleep
+Mon Aug 17 14:09:41 2026
+ - StartCheatTheard - DevLog initialized
+Mon Aug 17 14:09:41 2026
+ - StartCheatTheard - CrashLog initialized
+Mon Aug 17 14:09:41 2026
+ - StartCheatTheard - Step 1: InitalizeMH
+Mon Aug 17 14:09:41 2026
+ - Step 1: InitalizeMH OK
+Mon Aug 17 14:09:41 2026
+ - Step 2: FunctionList::OnInit
+Mon Aug 17 14:09:54 2026
+ - Step 2: FunctionList::OnInit OK
+Mon Aug 17 14:09:54 2026
+ - Step 3: CSDK_Loader::LoadSDK
+Mon Aug 17 14:09:56 2026
+ - Step 3: CSDK_Loader::LoadSDK OK
+Mon Aug 17 14:09:56 2026
+ - Step 4: Hook_Loader::InstallSecondHook
+Mon Aug 17 14:09:57 2026
+ - Step 4: Hook_Loader::InstallSecondHook OK
+Mon Aug 17 14:09:57 2026
+ - Step 5: Loading settings
+Mon Aug 17 14:09:57 2026
+ - Step 5: Settings loaded OK
+Mon Aug 17 14:09:57 2026
+ - Step 6: Waiting for GUI initialization
+Mon Aug 17 14:09:57 2026
+ - Step 6: GUI initialized OK
+Mon Aug 17 14:09:57 2026
+ - Step 7: PericlesClient::OnInit
+Mon Aug 17 14:09:57 2026
+ - Step 7: PericlesClient::OnInit OK
+Mon Aug 17 14:09:57 2026
+ - StartCheatTheard - END SUCCESS
+Mon Aug 17 14:25:13 2026
+ - OnDestroy - Start
+Mon Aug 17 14:25:13 2026
+ - OnDestroy - End
+Mon Aug 17 14:25:19 2026
+ - OnDestroy - Start
+Mon Aug 17 14:25:19 2026
+ - OnDestroy - End
+Mon Aug 17 15:56:05 2026
+ - OnDllMain - Start, lpReserved=0000000000000000
+Mon Aug 17 15:56:05 2026
+ - OnDllMain - ModuleFileName: C:\Users\ghost\AppData\Local\Pericles\Runtime\1a4fabaf748b4fc39d92ef5066961f9c\module.dll
+Mon Aug 17 15:56:05 2026
+ - OnDllMain - Final DllDir: C:\Users\ghost\AppData\Local\Pericles\Runtime\1a4fabaf748b4fc39d92ef5066961f9c\
+Mon Aug 17 15:56:05 2026
+ - OnDllMain - Final DllDir: C:\Users\ghost\AppData\Local\Pericles\Runtime\1a4fabaf748b4fc39d92ef5066961f9c\
+Mon Aug 17 15:56:05 2026
+ - OnDllMain - Creating StartCheatThread
+Mon Aug 17 15:56:05 2026
+ - OnDllMain - CreateThread succeeded, handle=0000000000000214
+Mon Aug 17 15:56:05 2026
+ - StartCheatTheard - BEGIN
+Mon Aug 17 15:56:05 2026
+ - StartCheatTheard - DllDir: C:\Users\ghost\AppData\Local\Pericles\Runtime\1a4fabaf748b4fc39d92ef5066961f9c\
+Mon Aug 17 15:56:07 2026
+ - StartCheatTheard - After sleep
+Mon Aug 17 15:56:07 2026
+ - StartCheatTheard - DevLog initialized
+Mon Aug 17 15:56:07 2026
+ - StartCheatTheard - CrashLog initialized
+Mon Aug 17 15:56:07 2026
+ - StartCheatTheard - Step 1: InitalizeMH
+Mon Aug 17 15:56:07 2026
+ - Step 1: InitalizeMH OK
+Mon Aug 17 15:56:07 2026
+ - Step 2: FunctionList::OnInit
+Mon Aug 17 15:56:21 2026
+ - Step 2: FunctionList::OnInit OK
+Mon Aug 17 15:56:21 2026
+ - Step 3: CSDK_Loader::LoadSDK
+Mon Aug 17 15:56:23 2026
+ - Step 3: CSDK_Loader::LoadSDK OK
+Mon Aug 17 15:56:23 2026
+ - Step 4: Hook_Loader::InstallSecondHook
+Mon Aug 17 15:56:23 2026
+ - Step 4: Hook_Loader::InstallSecondHook OK
+Mon Aug 17 15:56:23 2026
+ - Step 5: Loading settings
+Mon Aug 17 15:56:23 2026
+ - Step 5: Settings loaded OK
+Mon Aug 17 15:56:23 2026
+ - Step 6: Waiting for GUI initialization
+Mon Aug 17 15:56:23 2026
+ - Step 6: GUI initialized OK
+Mon Aug 17 15:56:23 2026
+ - Step 7: PericlesClient::OnInit
+Mon Aug 17 15:56:23 2026
+ - Step 7: PericlesClient::OnInit OK
+Mon Aug 17 15:56:23 2026
+ - StartCheatTheard - END SUCCESS
+Mon Aug 17 17:57:04 2026
+ - OnDestroy - Start
+Mon Aug 17 17:57:04 2026
+ - OnDestroy - End
+Mon Aug 17 20:53:04 2026
+ - OnDllMain - Start, lpReserved=0000000000000000
+Mon Aug 17 20:53:04 2026
+ - OnDllMain - ModuleFileName: C:\Users\ghost\AppData\Local\Pericles\Runtime\0fbd59526e4041a199d34abb95ed0a25\module.dll
+Mon Aug 17 20:53:04 2026
+ - OnDllMain - Final DllDir: C:\Users\ghost\AppData\Local\Pericles\Runtime\0fbd59526e4041a199d34abb95ed0a25\
+Mon Aug 17 20:53:04 2026
+ - OnDllMain - Final DllDir: C:\Users\ghost\AppData\Local\Pericles\Runtime\0fbd59526e4041a199d34abb95ed0a25\
+Mon Aug 17 20:53:04 2026
+ - OnDllMain - Creating StartCheatThread
+Mon Aug 17 20:53:04 2026
+ - OnDllMain - CreateThread succeeded, handle=0000000000000264
+Mon Aug 17 20:53:04 2026
+ - StartCheatTheard - BEGIN
+Mon Aug 17 20:53:04 2026
+ - StartCheatTheard - DllDir: C:\Users\ghost\AppData\Local\Pericles\Runtime\0fbd59526e4041a199d34abb95ed0a25\
+Mon Aug 17 20:53:06 2026
+ - StartCheatTheard - After sleep
+Mon Aug 17 20:53:06 2026
+ - StartCheatTheard - DevLog initialized
+Mon Aug 17 20:53:06 2026
+ - StartCheatTheard - CrashLog initialized
+Mon Aug 17 20:53:06 2026
+ - StartCheatTheard - Step 1: InitalizeMH
+Mon Aug 17 20:53:06 2026
+ - Step 1: InitalizeMH OK
+Mon Aug 17 20:53:06 2026
+ - Step 2: FunctionList::OnInit
+Mon Aug 17 20:53:20 2026
+ - Step 2: FunctionList::OnInit OK
+Mon Aug 17 20:53:20 2026
+ - Step 3: CSDK_Loader::LoadSDK
+Mon Aug 17 20:53:22 2026
+ - Step 3: CSDK_Loader::LoadSDK OK
+Mon Aug 17 20:53:22 2026
+ - Step 4: Hook_Loader::InstallSecondHook
+Mon Aug 17 20:53:22 2026
+ - Step 4: Hook_Loader::InstallSecondHook OK
+Mon Aug 17 20:53:22 2026
+ - Step 5: Loading settings
+Mon Aug 17 20:53:22 2026
+ - Step 5: Settings loaded OK
+Mon Aug 17 20:53:22 2026
+ - Step 6: Waiting for GUI initialization
+Mon Aug 17 20:53:23 2026
+ - Step 6: GUI initialized OK
+Mon Aug 17 20:53:23 2026
+ - Step 7: PericlesClient::OnInit
+Mon Aug 17 20:53:23 2026
+ - Step 7: PericlesClient::OnInit OK
+Mon Aug 17 20:53:23 2026
+ - StartCheatTheard - END SUCCESS
+Mon Aug 17 23:18:43 2026
+ - OnDestroy - Start
+Mon Aug 17 23:18:43 2026
+ - OnDestroy - End
+Mon Aug 17 23:18:46 2026
+ - OnDestroy - Start
+Mon Aug 17 23:18:46 2026
+ - OnDestroy - End
+Mon Aug 17 23:19:02 2026
+ - OnDestroy - Start
+Mon Aug 17 23:19:02 2026
+ - OnDestroy - End
+Tue Aug 18 15:17:52 2026
+ - OnDllMain - Start, lpReserved=0000000000000000
+Tue Aug 18 15:17:52 2026
+ - OnDllMain - ModuleFileName: C:\Users\ghost\AppData\Local\Pericles\Runtime\03250511abe3408baef84f8f2dd7ccaa\module.dll
+Tue Aug 18 15:17:52 2026
+ - OnDllMain - Final DllDir: C:\Users\ghost\AppData\Local\Pericles\Runtime\03250511abe3408baef84f8f2dd7ccaa\
+Tue Aug 18 15:17:52 2026
+ - OnDllMain - Final DllDir: C:\Users\ghost\AppData\Local\Pericles\Runtime\03250511abe3408baef84f8f2dd7ccaa\
+Tue Aug 18 15:17:52 2026
+ - OnDllMain - Creating StartCheatThread
+Tue Aug 18 15:17:52 2026
+ - OnDllMain - CreateThread succeeded, handle=0000000000000240
+Tue Aug 18 15:17:52 2026
+ - StartCheatTheard - BEGIN
+Tue Aug 18 15:17:52 2026
+ - StartCheatTheard - DllDir: C:\Users\ghost\AppData\Local\Pericles\Runtime\03250511abe3408baef84f8f2dd7ccaa\
+Tue Aug 18 15:17:54 2026
+ - StartCheatTheard - After sleep
+Tue Aug 18 15:17:54 2026
+ - StartCheatTheard - DevLog initialized
+Tue Aug 18 15:17:54 2026
+ - StartCheatTheard - CrashLog initialized
+Tue Aug 18 15:17:54 2026
+ - StartCheatTheard - Step 1: InitalizeMH
+Tue Aug 18 15:17:54 2026
+ - Step 1: InitalizeMH OK
+Tue Aug 18 15:17:54 2026
+ - Step 2: FunctionList::OnInit
+Tue Aug 18 15:18:16 2026
+ - Step 2: FunctionList::OnInit OK
+Tue Aug 18 15:18:16 2026
+ - Step 3: CSDK_Loader::LoadSDK
+Tue Aug 18 15:18:19 2026
+ - Step 3: CSDK_Loader::LoadSDK OK
+Tue Aug 18 15:18:19 2026
+ - Step 4: Hook_Loader::InstallSecondHook
+Tue Aug 18 15:18:19 2026
+ - Step 4: Hook_Loader::InstallSecondHook OK
+Tue Aug 18 15:18:19 2026
+ - Step 5: Loading settings
+Tue Aug 18 15:18:19 2026
+ - Step 5: Settings loaded OK
+Tue Aug 18 15:18:19 2026
+ - Step 6: Waiting for GUI initialization
+Tue Aug 18 15:18:21 2026
+ - Step 6: GUI initialized OK
+Tue Aug 18 15:18:21 2026
+ - Step 7: PericlesClient::OnInit
+Tue Aug 18 15:18:21 2026
+ - Step 7: PericlesClient::OnInit OK
+Tue Aug 18 15:18:21 2026
+ - StartCheatTheard - END SUCCESS
+Tue Aug 18 16:03:00 2026
+ - OnDestroy - Start
+Tue Aug 18 16:03:00 2026
+ - OnDestroy - End
+Tue Aug 18 18:45:31 2026
+ - OnDllMain - Start, lpReserved=0000000000000000
+Tue Aug 18 18:45:31 2026
+ - OnDllMain - ModuleFileName: C:\Users\ghost\AppData\Local\Pericles\Runtime\77638356e50d493baa3145f47964f7db\module.dll
+Tue Aug 18 18:45:31 2026
+ - OnDllMain - Final DllDir: C:\Users\ghost\AppData\Local\Pericles\Runtime\77638356e50d493baa3145f47964f7db\
+Tue Aug 18 18:45:31 2026
+ - OnDllMain - Final DllDir: C:\Users\ghost\AppData\Local\Pericles\Runtime\77638356e50d493baa3145f47964f7db\
+Tue Aug 18 18:45:31 2026
+ - OnDllMain - Creating StartCheatThread
+Tue Aug 18 18:45:31 2026
+ - OnDllMain - CreateThread succeeded, handle=0000000000000258
+Tue Aug 18 18:45:31 2026
+ - StartCheatTheard - BEGIN
+Tue Aug 18 18:45:31 2026
+ - StartCheatTheard - DllDir: C:\Users\ghost\AppData\Local\Pericles\Runtime\77638356e50d493baa3145f47964f7db\
+Tue Aug 18 18:45:33 2026
+ - StartCheatTheard - After sleep
+Tue Aug 18 18:45:33 2026
+ - StartCheatTheard - DevLog initialized
+Tue Aug 18 18:45:33 2026
+ - StartCheatTheard - CrashLog initialized
+Tue Aug 18 18:45:33 2026
+ - StartCheatTheard - Step 1: InitalizeMH
+Tue Aug 18 18:45:33 2026
+ - Step 1: InitalizeMH OK
+Tue Aug 18 18:45:33 2026
+ - Step 2: FunctionList::OnInit
+Tue Aug 18 18:45:46 2026
+ - Step 2: FunctionList::OnInit OK
+Tue Aug 18 18:45:46 2026
+ - Step 3: CSDK_Loader::LoadSDK
+Tue Aug 18 18:45:47 2026
+ - Step 3: CSDK_Loader::LoadSDK OK
+Tue Aug 18 18:45:47 2026
+ - Step 4: Hook_Loader::InstallSecondHook
+Tue Aug 18 18:45:47 2026
+ - Step 4: Hook_Loader::InstallSecondHook OK
+Tue Aug 18 18:45:47 2026
+ - Step 5: Loading settings
+Tue Aug 18 18:45:47 2026
+ - Step 5: Settings loaded OK
+Tue Aug 18 18:45:47 2026
+ - Step 6: Waiting for GUI initialization
+Tue Aug 18 18:45:48 2026
+ - Step 6: GUI initialized OK
+Tue Aug 18 18:45:48 2026
+ - Step 7: PericlesClient::OnInit
+Tue Aug 18 18:45:48 2026
+ - Step 7: PericlesClient::OnInit OK
+Tue Aug 18 18:45:48 2026
+ - StartCheatTheard - END SUCCESS
+Tue Aug 18 19:49:26 2026
+ - OnDestroy - Start
+Tue Aug 18 19:49:26 2026
+ - OnDestroy - End
+Wed Aug 19 00:53:49 2026
+ - OnDllMain - Start, lpReserved=0000000000000000
+Wed Aug 19 00:53:49 2026
+ - OnDllMain - ModuleFileName: C:\Users\ghost\AppData\Local\Pericles\Runtime\397aeb0325bb4a989d144a6ec7b59512\module.dll
+Wed Aug 19 00:53:49 2026
+ - OnDllMain - Final DllDir: C:\Users\ghost\AppData\Local\Pericles\Runtime\397aeb0325bb4a989d144a6ec7b59512\
+Wed Aug 19 00:53:49 2026
+ - OnDllMain - Final DllDir: C:\Users\ghost\AppData\Local\Pericles\Runtime\397aeb0325bb4a989d144a6ec7b59512\
+Wed Aug 19 00:53:49 2026
+ - OnDllMain - Creating StartCheatThread
+Wed Aug 19 00:53:49 2026
+ - OnDllMain - CreateThread succeeded, handle=000000000000021C
+Wed Aug 19 00:53:49 2026
+ - StartCheatTheard - BEGIN
+Wed Aug 19 00:53:49 2026
+ - StartCheatTheard - DllDir: C:\Users\ghost\AppData\Local\Pericles\Runtime\397aeb0325bb4a989d144a6ec7b59512\
+Wed Aug 19 00:53:51 2026
+ - StartCheatTheard - After sleep
+Wed Aug 19 00:53:51 2026
+ - StartCheatTheard - DevLog initialized
+Wed Aug 19 00:53:51 2026
+ - StartCheatTheard - CrashLog initialized
+Wed Aug 19 00:53:51 2026
+ - StartCheatTheard - Step 1: InitalizeMH
+Wed Aug 19 00:53:51 2026
+ - Step 1: InitalizeMH OK
+Wed Aug 19 00:53:51 2026
+ - Step 2: FunctionList::OnInit
+Wed Aug 19 00:54:12 2026
+ - Step 2: FunctionList::OnInit OK
+Wed Aug 19 00:54:12 2026
+ - Step 3: CSDK_Loader::LoadSDK
+Wed Aug 19 00:54:13 2026
+ - Step 3: CSDK_Loader::LoadSDK OK
+Wed Aug 19 00:54:13 2026
+ - Step 4: Hook_Loader::InstallSecondHook
+Wed Aug 19 00:54:13 2026
+ - Step 4: Hook_Loader::InstallSecondHook OK
+Wed Aug 19 00:54:13 2026
+ - Step 5: Loading settings
+Wed Aug 19 00:54:13 2026
+ - Step 5: Settings loaded OK
+Wed Aug 19 00:54:13 2026
+ - Step 6: Waiting for GUI initialization
+Wed Aug 19 00:54:16 2026
+ - Step 6: GUI initialized OK
+Wed Aug 19 00:54:16 2026
+ - Step 7: PericlesClient::OnInit
+Wed Aug 19 00:54:16 2026
+ - Step 7: PericlesClient::OnInit OK
+Wed Aug 19 00:54:16 2026
+ - StartCheatTheard - END SUCCESS
+Wed Aug 19 02:59:12 2026
+ - OnDestroy - Start
+Wed Aug 19 02:59:12 2026
+ - OnDestroy - End

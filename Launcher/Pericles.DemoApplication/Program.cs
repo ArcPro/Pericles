@@ -7,9 +7,7 @@ Console.CancelKeyPress += (_, eventArgs) =>
     shutdown.Cancel();
 };
 
-Console.WriteLine("[PericlesDemoApp] Starting module host...");
-Console.WriteLine($"[PericlesDemoApp] Expected identity=pericles-demo-application, game=deadlock, pipe=Pericles.Deadlock");
-Console.WriteLine($"[PericlesDemoApp] SessionNonce={Environment.GetEnvironmentVariable(PericlesModuleHostOptions.SessionNonceEnvironmentVariable) ?? "<missing>"}");
+ApplicationLog.Write("Starting module host. identity=pericles-demo-application, game=deadlock, pipe=Pericles.Deadlock");
 
 try
 {
@@ -17,9 +15,11 @@ try
         "pericles-demo-application",
         "deadlock",
         "Pericles.Deadlock"));
+    host.DiagnosticMessage += message =>
+        ApplicationLog.Write($"[module-host] {message}");
 
     await host.StartAsync(shutdown.Token);
-    Console.WriteLine("Pericles Demo Application prête. Ctrl+C pour quitter.");
+    ApplicationLog.Write("Pericles Demo Application prête.");
     try
     {
         await Task.Delay(Timeout.InfiniteTimeSpan, shutdown.Token);
@@ -30,7 +30,6 @@ try
 }
 catch (Exception ex)
 {
-    Console.WriteLine($"[PericlesDemoApp] Startup failed: {ex.GetType().Name}: {ex.Message}");
-    Console.WriteLine(ex);
+    ApplicationLog.Write($"Startup failed: {ex}");
     Environment.ExitCode = 1;
 }

@@ -17,6 +17,11 @@ public interface IDeviceApiClient
         string accessToken,
         CancellationToken cancellationToken);
 
+    Task<DeviceRegistrationResponse> MigrateHardwareIdAsync(
+        string deviceId,
+        string accessToken,
+        CancellationToken cancellationToken);
+
     Task<IReadOnlyList<DeviceInfo>> GetDevicesAsync(
         string currentDeviceId,
         string accessToken,

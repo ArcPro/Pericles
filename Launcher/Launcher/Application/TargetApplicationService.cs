@@ -45,17 +45,13 @@ public sealed class TargetApplicationService(
         {
             using (candidate)
             {
-                try
+                if (game.IsSelfHosted && candidate.Id == Environment.ProcessId)
                 {
-                    if (!candidate.HasExited
-                        && string.Equals(Path.GetFullPath(candidate.MainModule?.FileName ?? ""), expectedPath, StringComparison.OrdinalIgnoreCase))
-                    {
-                        throw new ApplicationSessionUnavailableException();
-                    }
+                    continue;
                 }
-                catch (Exception exception) when (exception is InvalidOperationException or System.ComponentModel.Win32Exception)
+                if (IsMatchingActiveProcess(candidate, expectedPath))
                 {
-                    // An inaccessible or exited process is not a compatible configured instance.
+                    throw new ApplicationSessionUnavailableException();
                 }
             }
         }
@@ -71,12 +67,28 @@ public sealed class TargetApplicationService(
                 UseShellExecute = false,
                 WorkingDirectory = Path.GetDirectoryName(expectedPath)!
             };
+            if (game.IsSelfHosted)
+            {
+                startInfo.ArgumentList.Add(ModuleHostMode.ModeArgument);
+                startInfo.ArgumentList.Add("--game");
+                startInfo.ArgumentList.Add(game.GameSlug);
+                startInfo.ArgumentList.Add("--identity");
+                startInfo.ArgumentList.Add(game.ApplicationIdentity);
+                startInfo.ArgumentList.Add("--pipe");
+                startInfo.ArgumentList.Add(game.PipeName);
+                startInfo.ArgumentList.Add("--parent-pid");
+                startInfo.ArgumentList.Add(Environment.ProcessId.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            }
+#if !DEBUG
+            startInfo.CreateNoWindow = true;
+            startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+#endif
             startInfo.Environment[PericlesModuleHostOptions.SessionNonceEnvironmentVariable] = sessionNonce;
             startInfo.Environment[PericlesModuleHostOptions.SessionSecretEnvironmentVariable] = Base64Url(sessionSecret);
             startInfo.Environment[PericlesModuleHostOptions.RuntimeRootEnvironmentVariable] = options.Value.GetRuntimeRoot();
             process = Process.Start(startInfo);
         }
-        catch (Exception exception) when (exception is InvalidOperationException or System.ComponentModel.Win32Exception)
+        catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or System.ComponentModel.Win32Exception)
         {
             CryptographicOperations.ZeroMemory(sessionSecret);
             throw new ApplicationStartException("The configured application could not be started.", exception);
@@ -101,7 +113,7 @@ public sealed class TargetApplicationService(
                     }
                     try
                     {
-                        string actualPath = Path.GetFullPath(process.MainModule?.FileName ?? "");
+                        string? actualPath = GetProcessPath(process);
                         if (string.Equals(actualPath, expectedPath, StringComparison.OrdinalIgnoreCase))
                         {
                             logger.LogInformation("Configured target application started as process {ProcessId}.", process.Id);
@@ -120,8 +132,9 @@ public sealed class TargetApplicationService(
                             return CreateInstance(session, true);
                         }
                     }
-                    catch (Exception exception) when (exception is InvalidOperationException or System.ComponentModel.Win32Exception)
+                    catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or System.ComponentModel.Win32Exception)
                     {
+                        // Process metadata can be temporarily unavailable immediately after start.
                     }
                     await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                 }
@@ -154,7 +167,7 @@ public sealed class TargetApplicationService(
             DateTimeOffset startedAt = new(process.StartTime.ToUniversalTime(), TimeSpan.Zero);
             if (process.HasExited
                 || startedAt != session.StartedAt
-                || !string.Equals(Path.GetFullPath(process.MainModule?.FileName ?? ""), expectedPath, StringComparison.OrdinalIgnoreCase))
+                || !string.Equals(GetProcessPath(process), expectedPath, StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }
@@ -164,6 +177,26 @@ public sealed class TargetApplicationService(
         {
             return null;
         }
+    }
+
+    private static bool IsMatchingActiveProcess(Process process, string expectedPath)
+    {
+        try
+        {
+            return !process.HasExited
+                && string.Equals(GetProcessPath(process), expectedPath, StringComparison.OrdinalIgnoreCase);
+        }
+        catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            // An inaccessible or exited process is not a compatible configured instance.
+            return false;
+        }
+    }
+
+    private static string? GetProcessPath(Process process)
+    {
+        string? path = process.MainModule?.FileName;
+        return string.IsNullOrWhiteSpace(path) ? null : Path.GetFullPath(path);
     }
 
     private void RemoveSession(string gameSlug, ManagedSession expected)

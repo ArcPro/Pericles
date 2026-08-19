@@ -17,6 +17,22 @@ public sealed class DeviceVerificationService(
     {
         ArgumentNullException.ThrowIfNull(authSession);
         DeviceIdentity identity = await identityService.GetOrCreateAsync(cancellationToken);
+        if (identity.PreviousDeviceId is string previousDeviceId)
+        {
+            try
+            {
+                await VerifyDeviceIdAsync(previousDeviceId, authSession, cancellationToken);
+                await apiClient.MigrateHardwareIdAsync(
+                    identity.DeviceId,
+                    authSession.AccessToken,
+                    cancellationToken);
+            }
+            catch (DeviceApiException exception) when (exception.Error == DeviceApiError.DeviceNotFound)
+            {
+                logger.LogInformation("Legacy device was not registered; hardware identity will be registered directly.");
+            }
+        }
+
         var registration = new RegisterDeviceRequest(
             identity.DeviceId,
             identity.PublicKey,
@@ -24,8 +40,41 @@ public sealed class DeviceVerificationService(
             Environment.MachineName);
         await apiClient.RegisterAsync(registration, authSession.AccessToken, cancellationToken);
 
-        DeviceChallengeResponse challenge = await apiClient.RequestChallengeAsync(
+        DeviceVerificationResponse verification = await VerifyDeviceIdAsync(
             identity.DeviceId,
+            authSession,
+            cancellationToken);
+        if (identity.PreviousDeviceId is not null)
+        {
+            await identityService.CompleteHardwareIdMigrationAsync(identity, cancellationToken);
+        }
+
+        IReadOnlyList<DeviceInfo> devices = await apiClient.GetDevicesAsync(
+            identity.DeviceId,
+            authSession.AccessToken,
+            cancellationToken);
+        var verifiedIdentity = new DeviceIdentity
+        {
+            SchemaVersion = identity.SchemaVersion,
+            DeviceId = identity.DeviceId,
+            PublicKey = identity.PublicKey,
+            KeyAlgorithm = identity.KeyAlgorithm,
+            CreatedAt = identity.CreatedAt,
+            HardwareIdVersion = identity.HardwareIdVersion
+        };
+        var session = new DeviceSession(verifiedIdentity, verification.VerifiedAt, devices);
+        state.SetVerified(session);
+        logger.LogInformation("Current device verified ({DeviceId}).", Mask(identity.DeviceId));
+        return session;
+    }
+
+    private async Task<DeviceVerificationResponse> VerifyDeviceIdAsync(
+        string deviceId,
+        AuthSession authSession,
+        CancellationToken cancellationToken)
+    {
+        DeviceChallengeResponse challenge = await apiClient.RequestChallengeAsync(
+            deviceId,
             authSession.AccessToken,
             cancellationToken);
         byte[] challengeBytes;
@@ -53,7 +102,7 @@ public sealed class DeviceVerificationService(
             CryptographicOperations.ZeroMemory(challengeBytes);
         }
         DeviceVerificationResponse verification = await apiClient.VerifyAsync(
-            new VerifyDeviceRequest(identity.DeviceId, challenge.ChallengeId, signature),
+            new VerifyDeviceRequest(deviceId, challenge.ChallengeId, signature),
             authSession.AccessToken,
             cancellationToken);
         if (!verification.DeviceVerified)
@@ -61,14 +110,7 @@ public sealed class DeviceVerificationService(
             throw new DeviceApiException(DeviceApiError.InvalidSignature, "The server rejected the device signature.");
         }
 
-        IReadOnlyList<DeviceInfo> devices = await apiClient.GetDevicesAsync(
-            identity.DeviceId,
-            authSession.AccessToken,
-            cancellationToken);
-        var session = new DeviceSession(identity, verification.VerifiedAt, devices);
-        state.SetVerified(session);
-        logger.LogInformation("Current device verified ({DeviceId}).", Mask(identity.DeviceId));
-        return session;
+        return verification;
     }
 
     public async Task<IReadOnlyList<DeviceInfo>> RefreshDevicesAsync(

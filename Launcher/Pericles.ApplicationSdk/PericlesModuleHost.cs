@@ -12,18 +12,18 @@ public sealed class PericlesModuleHost : IAsyncDisposable
 
     public PericlesModuleHost(
         PericlesModuleHostOptions options,
-        IProcessInjector? injector = null,
-        int? targetProcessId = null)
+        IProcessInjector? injector = null)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
         ValidateOptions(options);
 
-        // Injection is restricted to this owned application process.
         _registry = new ModuleRegistry(
             options,
             injector ?? new WindowsProcessInjector(),
-            targetProcessId ?? Environment.ProcessId);
+            ReportDiagnostic);
     }
+
+    public event Action<string>? DiagnosticMessage;
 
     public Task StartAsync(CancellationToken cancellationToken = default)
     {
@@ -78,20 +78,22 @@ public sealed class PericlesModuleHost : IAsyncDisposable
                 PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
             try
             {
+                ReportDiagnostic($"Waiting for launcher connection on pipe '{_options.PipeName}'.");
                 await pipe.WaitForConnectionAsync(cancellationToken).ConfigureAwait(false);
+                ReportDiagnostic("Launcher connected to the module host.");
                 await HandleConnectionAsync(pipe, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 break;
             }
-            catch (IOException)
+            catch (IOException exception)
             {
-                // A disconnected client is isolated to this pipe instance.
+                ReportDiagnostic($"IPC client disconnected: {exception.Message}");
             }
-            catch (IpcProtocolException)
+            catch (IpcProtocolException exception)
             {
-                // Invalid local clients receive no internal diagnostic details.
+                ReportDiagnostic($"IPC protocol request rejected: {exception.Message}");
             }
         }
     }
@@ -124,6 +126,7 @@ public sealed class PericlesModuleHost : IAsyncDisposable
                 sessionNonce,
                 _options.SessionSecret),
             cancellationToken).ConfigureAwait(false);
+        ReportDiagnostic($"Authenticated launcher handshake for game '{_options.GameSlug}'.");
 
         var requestIds = new HashSet<string>(StringComparer.Ordinal) { hello.RequestId };
         while (pipe.IsConnected && !cancellationToken.IsCancellationRequested)
@@ -148,6 +151,7 @@ public sealed class PericlesModuleHost : IAsyncDisposable
                     pipe,
                     IpcProtocol.Create(IpcProtocol.PrepareModuleAck, new SessionPayload(sessionNonce), request.RequestId),
                     cancellationToken).ConfigureAwait(false);
+                ReportDiagnostic("Module preparation acknowledged.");
                 continue;
             }
             if (request.MessageType == IpcProtocol.LoadModule)
@@ -158,6 +162,8 @@ public sealed class PericlesModuleHost : IAsyncDisposable
                     await SendErrorAsync(pipe, request.RequestId, "invalid_session", cancellationToken).ConfigureAwait(false);
                     return;
                 }
+                ReportDiagnostic(
+                    $"Load request received for {payload.Game} {payload.Version}; target game PID={payload.GameProcessId}.");
                 ModuleResultPayload result = await _registry.LoadAsync(payload, cancellationToken).ConfigureAwait(false);
                 string responseType = result.Code is "loaded" or "already_loaded"
                     ? IpcProtocol.ModuleLoaded
@@ -166,7 +172,13 @@ public sealed class PericlesModuleHost : IAsyncDisposable
                     pipe,
                     IpcProtocol.Create(responseType, result, request.RequestId),
                     cancellationToken).ConfigureAwait(false);
-                continue;
+                ReportDiagnostic(
+                    $"Load request completed for game PID {payload.GameProcessId}: {result.Code}.");
+
+                // A module load is a complete launcher transaction. The launcher closes its
+                // one-shot client pipe as soon as it receives this response, so do not begin
+                // another read that can only race that close and raise a broken-pipe IOException.
+                return;
             }
             if (request.MessageType == IpcProtocol.Ping)
             {
@@ -200,6 +212,18 @@ public sealed class PericlesModuleHost : IAsyncDisposable
         return System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(
             System.Text.Encoding.ASCII.GetBytes(supplied),
             System.Text.Encoding.ASCII.GetBytes(expected));
+    }
+
+    private void ReportDiagnostic(string message)
+    {
+        try
+        {
+            DiagnosticMessage?.Invoke(message);
+        }
+        catch
+        {
+            // Diagnostics must never interrupt the authenticated module-host protocol.
+        }
     }
 
     private static Task SendErrorAsync(Stream stream, string requestId, string code, CancellationToken cancellationToken) =>

@@ -5,12 +5,11 @@ namespace Pericles.ApplicationSdk;
 internal sealed class ModuleRegistry(
     PericlesModuleHostOptions options,
     IProcessInjector injector,
-    int? targetProcessId = null)
+    Action<string>? diagnostic = null)
 {
     private readonly Dictionary<string, LoadedModule> _modules = new(StringComparer.Ordinal);
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly string _runtimeRoot = EnsureDirectoryRoot(options.RuntimeRoot);
-    private readonly int _targetProcessId = targetProcessId ?? Environment.ProcessId;
 
     public async Task<ModuleResultPayload> LoadAsync(LoadModulePayload request, CancellationToken cancellationToken)
     {
@@ -57,11 +56,14 @@ internal sealed class ModuleRegistry(
 
             try
             {
+                diagnostic?.Invoke(
+                    $"Injecting module {request.Game} {request.Version} into game PID {request.GameProcessId}.");
                 ProcessInjectionResult result = injector.Inject(
-                    _targetProcessId,
-                    path,
                     request.GameProcessId,
+                    path,
                     request.EntryPoint);
+                diagnostic?.Invoke(
+                    $"Injection result for game PID {request.GameProcessId}: code={result.Code}, nativeError={result.NativeError?.ToString() ?? "none"}, detail={result.ErrorMessage ?? "none"}.");
 
                 switch (result.Code)
                 {
@@ -95,9 +97,10 @@ internal sealed class ModuleRegistry(
                         return new ModuleResultPayload(request.Game, request.Version, result.Code);
                 }
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-                // Log l'exception mais retourne un code d'erreur standard
+                diagnostic?.Invoke(
+                    $"Injection threw {exception.GetType().Name}: {exception.Message}");
                 return new ModuleResultPayload(request.Game, request.Version, "load_failed");
             }
         }

@@ -5,6 +5,7 @@ public enum DeviceApiError
     DeviceLimitReached,
     DeviceRevoked,
     DeviceClaimed,
+    DeviceNotFound,
     PublicKeyMismatch,
     ChallengeExpired,
     ChallengeUsed,

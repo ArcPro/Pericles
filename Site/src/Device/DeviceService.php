@@ -162,6 +162,55 @@ final class DeviceService
         }
     }
 
+    public function migrateHardwareId(int $userId, int $deviceRowId, string $hardwareDeviceId): array
+    {
+        $hardwareDeviceId = $this->validateDeviceId($hardwareDeviceId);
+        $this->beginWriteTransaction();
+        try {
+            $suffix = $this->driver === 'mysql' ? ' FOR UPDATE' : '';
+            $statement = $this->database->prepare(
+                'SELECT * FROM devices WHERE id = :id AND user_id = :user_id LIMIT 1' . $suffix
+            );
+            $statement->execute([':id' => $deviceRowId, ':user_id' => $userId]);
+            $device = $statement->fetch();
+            if (!is_array($device)) {
+                throw new ApiException('device_not_found', 404, 'Device not found.');
+            }
+            $this->ensureActive($device);
+            if (hash_equals((string) $device['device_id'], $hardwareDeviceId)) {
+                $this->commit();
+                return $this->toPublicDevice($device, $hardwareDeviceId);
+            }
+
+            $existing = $this->findByDeviceId($hardwareDeviceId, true);
+            if (is_array($existing) && (int) $existing['id'] !== $deviceRowId) {
+                throw new ApiException(
+                    'device_claimed',
+                    409,
+                    'This hardware identity is already registered.'
+                );
+            }
+
+            $update = $this->database->prepare(
+                'UPDATE devices SET device_id = :device_id WHERE id = :id AND user_id = :user_id'
+            );
+            $update->execute([
+                ':device_id' => $hardwareDeviceId,
+                ':id' => $deviceRowId,
+                ':user_id' => $userId,
+            ]);
+            if ($update->rowCount() !== 1) {
+                throw new ApiException('device_not_found', 404, 'Device not found.');
+            }
+            $device['device_id'] = $hardwareDeviceId;
+            $this->commit();
+            return $this->toPublicDevice($device, $hardwareDeviceId);
+        } catch (Throwable $exception) {
+            $this->rollBack();
+            throw $exception;
+        }
+    }
+
     public function verify(
         int $userId,
         string $deviceId,

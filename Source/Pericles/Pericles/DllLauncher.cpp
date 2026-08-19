@@ -1,10 +1,37 @@
 // DllLauncher.cpp
+#include "DllMain.hpp"
 #include "DllLauncher.hpp"
+#include "Common/CrashLog.hpp"
+#include "Common/Helpers/StringHelper.hpp"
+#include "DeadLock/CHook_Loader.hpp"
+#include "DeadLock/CSDK_Loader.hpp"
+#include "DeadLock/SDK/CFunctionList.hpp"
+#include "PericlesClient/CPericlesClient.hpp"
+#include "PericlesClient/CPericlesGUI.hpp"
+#include "PericlesClient/Settings/CSettingsJson.hpp"
+
 #include <string>
 #include <winternl.h>
 #include <fstream>
 #include <chrono>
 #include <ctime>
+
+static CDllLauncher g_DllLauncher{};
+
+auto GetDllDir() -> std::string&
+{
+    return g_DllLauncher.m_DllDir;
+}
+
+auto GetDeadLockDir() -> std::string
+{
+    return g_DllLauncher.m_DeadLockDir;
+}
+
+auto GetDllLauncher() -> CDllLauncher*
+{
+    return &g_DllLauncher;
+}
 
 static void WriteDebugLog(const char* format, ...)
 {
@@ -19,7 +46,9 @@ static void WriteDebugLog(const char* format, ...)
     if (log.is_open()) {
         auto now = std::chrono::system_clock::now();
         auto time = std::chrono::system_clock::to_time_t(now);
-        log << std::ctime(&time) << " - " << buffer << std::endl;
+        char timestamp[26] = {};
+        ctime_s(timestamp, sizeof(timestamp), &time);
+        log << timestamp << " - " << buffer << std::endl;
         log.close();
     }
 

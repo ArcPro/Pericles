@@ -8,6 +8,8 @@ use Pericles\Auth\AuthService;
 use Pericles\Auth\SessionService;
 use Pericles\Activation\ActivationRateLimiter;
 use Pericles\Activation\ActivationService;
+use Pericles\Account\AccountService;
+use Pericles\Admin\AdminService;
 use Pericles\Catalog\CatalogService;
 use Pericles\Database;
 use Pericles\Device\DeviceService;
@@ -16,8 +18,10 @@ use Pericles\Http\BinaryResponse;
 use Pericles\Http\JsonRequest;
 use Pericles\Http\JsonResponse;
 use Pericles\Security\LoginRateLimiter;
+use Pericles\Security\AuthorizationService;
 use Pericles\Subscriptions\SubscriptionService;
 use Pericles\Web\AccountPage;
+use Pericles\Web\AdminPage;
 use Pericles\Modules\ModuleAuthorizationService;
 use Pericles\Modules\ModuleDownloadService;
 use Pericles\Modules\ModulePackageBuilder;
@@ -90,7 +94,7 @@ function requireCsrf(): void
     $provided = is_string($_POST['csrf'] ?? null) ? $_POST['csrf'] : '';
     $expected = is_string($_SESSION['csrf'] ?? null) ? $_SESSION['csrf'] : '';
     if ($provided === '' || $expected === '' || !hash_equals($expected, $provided)) {
-        throw new ApiException('invalid_csrf', 400, 'La session a expiré. Rechargez la page.');
+        throw new ApiException('invalid_csrf', 400, 'Your session has expired. Reload the page.');
     }
 }
 
@@ -101,16 +105,44 @@ function webPath(string $path): string
     return ($base === '' ? '' : $base) . '/' . ltrim($path, '/');
 }
 
+function redirectWithFlash(string $path, string $type, string $message, ?string $key = null): never
+{
+    $_SESSION['flash'] = ['type' => $type, 'message' => $message, 'key' => $key];
+    header('Location: ' . webPath($path));
+    exit;
+}
+
+function consumeFlash(): ?array
+{
+    $flash = is_array($_SESSION['flash'] ?? null) ? $_SESSION['flash'] : null;
+    unset($_SESSION['flash']);
+    return $flash;
+}
+
+function signInWebUser(array $user): never
+{
+    session_regenerate_id(true);
+    $_SESSION['user_id'] = (int) $user['id'];
+    $_SESSION['email'] = (string) $user['email'];
+    $_SESSION['csrf'] = bin2hex(random_bytes(32));
+    header('Location: ' . webPath('/account'));
+    exit;
+}
+
 $config = require __DIR__ . '/../config/app.php';
 $route = currentRoute();
 
 try {
     if ($route === '/') {
-        JsonResponse::send(200, [
-            'service' => 'pericles-auth-api',
-            'status' => 'ok',
-            'version' => '0.1.0',
-        ]);
+        $accept = strtolower((string) ($_SERVER['HTTP_ACCEPT'] ?? ''));
+        if (str_contains($accept, 'application/json') && !str_contains($accept, 'text/html')) {
+            JsonResponse::send(200, [
+                'service' => 'pericles-auth-api',
+                'status' => 'ok',
+                'version' => '0.1.0',
+            ]);
+        }
+        AccountPage::landing();
     }
 
     if (($config['app_env'] ?? 'production') === 'production' && !requestIsHttps()) {
@@ -151,7 +183,8 @@ try {
         (int) $config['module_rate_window']
     );
 
-    if (in_array($route, ['/login', '/account', '/account/activate', '/logout'], true)) {
+    if ($route === '/login' || $route === '/register' || $route === '/logout'
+        || str_starts_with($route, '/account') || str_starts_with($route, '/admin')) {
         startWebSession(requestIsHttps());
         $csrf = (string) $_SESSION['csrf'];
 
@@ -172,17 +205,46 @@ try {
                 $rateLimiter->ensureAllowed($ip, $email);
                 $user = $auth->authenticate($email, $password);
                 $rateLimiter->clear($ip, $email);
-                session_regenerate_id(true);
-                $_SESSION['user_id'] = (int) $user['id'];
-                $_SESSION['email'] = (string) $user['email'];
-                $_SESSION['csrf'] = bin2hex(random_bytes(32));
-                header('Location: ' . webPath('/account'));
-                exit;
+                signInWebUser($user);
             } catch (ApiException $exception) {
                 if (isset($email, $ip) && $exception->errorCode === 'invalid_credentials') {
                     $rateLimiter->recordFailure($ip, $email);
                 }
-                AccountPage::login($csrf, 'Connexion impossible. Vérifiez vos identifiants.');
+                AccountPage::login($csrf, 'Unable to sign in. Check your credentials.');
+            }
+        }
+
+        if ($route === '/register') {
+            if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET') {
+                if (isset($_SESSION['user_id'])) {
+                    header('Location: ' . webPath('/account'));
+                    exit;
+                }
+                AccountPage::register($csrf);
+            }
+            requireMethod('POST');
+            try {
+                requireCsrf();
+                $email = is_string($_POST['email'] ?? null) ? $_POST['email'] : '';
+                $password = is_string($_POST['password'] ?? null) ? $_POST['password'] : '';
+                $passwordConfirm = is_string($_POST['password_confirm'] ?? null) ? $_POST['password_confirm'] : '';
+                $displayName = is_string($_POST['display_name'] ?? null) ? $_POST['display_name'] : '';
+                $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+                $rateLimiter->ensureAllowed($ip, $email);
+                if ($password !== $passwordConfirm) {
+                    throw new ApiException('validation_error', 400, 'The passwords do not match.');
+                }
+                $user = $auth->register($email, $password, $displayName);
+                $rateLimiter->clear($ip, $email);
+                signInWebUser($user);
+            } catch (ApiException $exception) {
+                if (isset($email, $ip) && $exception->errorCode === 'email_taken') {
+                    $rateLimiter->recordFailure($ip, $email);
+                }
+                $message = $exception->errorCode === 'rate_limited'
+                    ? 'Too many attempts. Try again later.'
+                    : $exception->getMessage();
+                AccountPage::register($csrf, $message);
             }
         }
 
@@ -192,6 +254,8 @@ try {
         }
         $webUserId = (int) $_SESSION['user_id'];
         $webEmail = (string) ($_SESSION['email'] ?? '');
+        $accounts = new AccountService($database);
+        $authorization = new AuthorizationService($database);
 
         if ($route === '/logout') {
             requireMethod('POST');
@@ -211,25 +275,128 @@ try {
                     $webUserId,
                     is_string($_POST['key'] ?? null) ? $_POST['key'] : ''
                 );
-                AccountPage::account(
-                    $webEmail,
-                    $subscriptions->listForUser($webUserId, null),
-                    $csrf,
-                    'Clé activée pour ' . (string) $result['product']['name'] . '.'
-                );
+                redirectWithFlash('/account', 'success', 'Key activated for ' . (string) $result['product']['name'] . '.');
             } catch (ApiException $exception) {
-                AccountPage::account(
-                    $webEmail,
-                    $subscriptions->listForUser($webUserId, null),
-                    $csrf,
-                    null,
-                    $exception->getMessage()
+                redirectWithFlash('/account#activation', 'error', $exception->getMessage());
+            }
+        }
+
+        if (preg_match('#^/account/products/([a-z0-9]+(?:-[a-z0-9]+)*)/unbind$#', $route, $matches)) {
+            requireMethod('POST');
+            try {
+                requireCsrf();
+                $accounts->unbindProduct($webUserId, $matches[1]);
+                redirectWithFlash('/account#products', 'success', 'The product has been unlinked from its device.');
+            } catch (ApiException $exception) {
+                redirectWithFlash('/account#products', 'error', $exception->getMessage());
+            }
+        }
+
+        if (preg_match('#^/account/devices/([a-fA-F0-9]{32})/revoke$#', $route, $matches)) {
+            requireMethod('POST');
+            try {
+                requireCsrf();
+                $devices->revoke($webUserId, $matches[1]);
+                redirectWithFlash('/account#devices', 'success', 'The device has been revoked.');
+            } catch (ApiException $exception) {
+                redirectWithFlash('/account#devices', 'error', $exception->getMessage());
+            }
+        }
+
+        if ($route === '/account/profile') {
+            requireMethod('POST');
+            try {
+                requireCsrf();
+                $profile = $accounts->updateProfile(
+                    $webUserId,
+                    is_string($_POST['display_name'] ?? null) ? $_POST['display_name'] : ''
                 );
+                $_SESSION['display_name'] = (string) $profile['display_name'];
+                redirectWithFlash('/account#profile', 'success', 'Your profile has been updated.');
+            } catch (ApiException $exception) {
+                redirectWithFlash('/account#profile', 'error', $exception->getMessage());
+            }
+        }
+
+        if ($route === '/account/security/password') {
+            requireMethod('POST');
+            try {
+                requireCsrf();
+                $accounts->changePassword(
+                    $webUserId,
+                    is_string($_POST['current_password'] ?? null) ? $_POST['current_password'] : '',
+                    is_string($_POST['new_password'] ?? null) ? $_POST['new_password'] : ''
+                );
+                redirectWithFlash('/account#security', 'success', 'Password changed. Launcher sessions have been revoked.');
+            } catch (ApiException $exception) {
+                redirectWithFlash('/account#security', 'error', $exception->getMessage());
+            }
+        }
+
+        if (str_starts_with($route, '/admin')) {
+            try {
+                $authorization->requirePermission($webUserId, 'admin.access');
+                $admin = new AdminService($database);
+                $ipAddress = (string) ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+                if ($route === '/admin') {
+                    requireMethod('GET');
+                    AdminPage::render($webEmail, $admin->dashboard($webUserId), $csrf, consumeFlash());
+                }
+                if ($route === '/admin/licenses/assign') {
+                    requireMethod('POST'); requireCsrf();
+                    $planReference = is_string($_POST['plan_ref'] ?? null) ? $_POST['plan_ref'] : '';
+                    [$productSlug, $planSlug] = array_pad(explode(':', $planReference, 2), 2, '');
+                    $grant = $admin->assignProduct(
+                        $webUserId,
+                        (int) ($_POST['user_id'] ?? 0),
+                        $productSlug,
+                        $planSlug,
+                        $ipAddress
+                    );
+                    redirectWithFlash('/admin#licenses', 'success', (string) $grant['result']['product']['name'] . ' license assigned to ' . (string) $grant['user']['email'] . '.', (string) $grant['plain_key']);
+                }
+                if (preg_match('#^/admin/subscriptions/(\d+)/unbind$#', $route, $matches)) {
+                    requireMethod('POST'); requireCsrf();
+                    $admin->unbindSubscription($webUserId, (int) $matches[1], $ipAddress);
+                    redirectWithFlash('/admin#licenses', 'success', 'The license has been unlinked from the HWID.');
+                }
+                if (preg_match('#^/admin/subscriptions/(\d+)/delete$#', $route, $matches)) {
+                    requireMethod('POST'); requireCsrf();
+                    $admin->deleteSubscription($webUserId, (int) $matches[1], $ipAddress);
+                    redirectWithFlash('/admin#licenses', 'success', 'The license has been permanently removed from the account.');
+                }
+                if (preg_match('#^/admin/users/(\d+)/status$#', $route, $matches)) {
+                    requireMethod('POST'); requireCsrf();
+                    $admin->updateUserStatus($webUserId, (int) $matches[1], is_string($_POST['status'] ?? null) ? $_POST['status'] : '', $ipAddress);
+                    redirectWithFlash('/admin#users', 'success', 'The account status has been updated.');
+                }
+                if (preg_match('#^/admin/users/(\d+)/role$#', $route, $matches)) {
+                    requireMethod('POST'); requireCsrf();
+                    $admin->updateUserRole($webUserId, (int) $matches[1], is_string($_POST['role'] ?? null) ? $_POST['role'] : '', $ipAddress);
+                    redirectWithFlash('/admin#users', 'success', 'The account role has been updated.');
+                }
+                throw new ApiException('not_found', 404, 'Administration page not found.');
+            } catch (ApiException $exception) {
+                if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET') {
+                    redirectWithFlash('/account', 'error', $exception->getMessage());
+                }
+                redirectWithFlash('/admin', 'error', $exception->getMessage());
             }
         }
 
         requireMethod('GET');
-        AccountPage::account($webEmail, $subscriptions->listForUser($webUserId, null), $csrf);
+        $flash = consumeFlash();
+        AccountPage::account(
+            $webEmail,
+            $subscriptions->listForUser($webUserId, null),
+            $devices->listDevices($webUserId, null),
+            $accounts->profile($webUserId),
+            $authorization->roleForUser($webUserId),
+            $authorization->can($webUserId, 'admin.access'),
+            $csrf,
+            ($flash['type'] ?? null) === 'success' ? (string) $flash['message'] : null,
+            ($flash['type'] ?? null) === 'error' ? (string) $flash['message'] : null
+        );
     }
 
     if ($route === '/api/v1/auth/login') {
@@ -315,6 +482,18 @@ try {
             is_string($payload['signature'] ?? null) ? $payload['signature'] : '',
             (int) $session['session_id']
         ));
+    }
+
+    if ($route === '/api/v1/devices/migrate-hardware-id') {
+        requireMethod('POST');
+        $session = $sessions->requireVerifiedDevice(bearerToken());
+        $payload = JsonRequest::body();
+        $device = $devices->migrateHardwareId(
+            (int) $session['user_id'],
+            (int) $session['device_row_id'],
+            is_string($payload['device_id'] ?? null) ? $payload['device_id'] : ''
+        );
+        JsonResponse::send(200, ['device' => $device]);
     }
 
     if ($route === '/api/v1/activation/redeem') {

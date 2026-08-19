@@ -213,7 +213,7 @@ public partial class MainWindow : Window
         }
         catch (Exception exception)
         {
-            _logger.LogError("Game action failed with {ExceptionType}.", exception.GetType().Name);
+            _logger.LogError(exception, "Game action failed.");
             AuthenticatedPanel.SetGameFeedback("Impossible de préparer le module.", error: true);
         }
         finally

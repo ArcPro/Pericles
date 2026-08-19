@@ -48,6 +48,18 @@ public sealed class DeviceApiClient(HttpClient httpClient, ILogger<DeviceApiClie
         return response;
     }
 
+    public async Task<DeviceRegistrationResponse> MigrateHardwareIdAsync(
+        string deviceId,
+        string accessToken,
+        CancellationToken cancellationToken)
+    {
+        using var message = CreateAuthenticatedRequest(HttpMethod.Post, "devices/migrate-hardware-id", accessToken);
+        message.Content = JsonContent.Create(new DeviceIdRequest(deviceId), options: JsonOptions);
+        DeviceRegistrationResponse response = await SendAndReadAsync<DeviceRegistrationResponse>(message, cancellationToken);
+        logger.LogInformation("Device hardware identifier migration successful.");
+        return response;
+    }
+
     public async Task<IReadOnlyList<DeviceInfo>> GetDevicesAsync(
         string currentDeviceId,
         string accessToken,
@@ -121,12 +133,14 @@ public sealed class DeviceApiClient(HttpClient httpClient, ILogger<DeviceApiClie
             "device_limit_reached" => DeviceApiError.DeviceLimitReached,
             "device_revoked" => DeviceApiError.DeviceRevoked,
             "device_claimed" => DeviceApiError.DeviceClaimed,
+            "device_not_found" => DeviceApiError.DeviceNotFound,
             "device_key_mismatch" => DeviceApiError.PublicKeyMismatch,
             "challenge_expired" => DeviceApiError.ChallengeExpired,
             "challenge_used" => DeviceApiError.ChallengeUsed,
             "invalid_signature" => DeviceApiError.InvalidSignature,
             "invalid_token" or "token_expired" => DeviceApiError.InvalidToken,
             "validation_error" => DeviceApiError.Validation,
+            _ when response.StatusCode == HttpStatusCode.NotFound => DeviceApiError.DeviceNotFound,
             _ when response.StatusCode == HttpStatusCode.TooManyRequests => DeviceApiError.Unavailable,
             _ when response.StatusCode == HttpStatusCode.RequestTimeout => DeviceApiError.Timeout,
             _ => DeviceApiError.ServerError
