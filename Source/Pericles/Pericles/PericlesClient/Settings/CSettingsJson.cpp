@@ -1,6 +1,7 @@
 #include "CSettingsJson.hpp"
 #include "DllLauncher.hpp"
 
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 
@@ -38,6 +39,7 @@ auto CSettingsJson::LoadConfig( const std::string& JsonFile ) -> void
 		if ( !SettingsAimPreview.IsNull() )
 		{
 			GetBoolJson( SettingsAimPreview , XorStr( "Active" ) , Settings::AimPreview::Active );
+			GetBoolJson( SettingsAimPreview , XorStr( "LegitMode" ) , Settings::AimPreview::LegitMode );
 			GetBoolJson( SettingsAimPreview , XorStr( "ShowFovCircle" ) , Settings::AimPreview::ShowFovCircle );
 			if ( SettingsAimPreview.HasMember( XorStr( "TargetBonesMask" ) ) )
 			{
@@ -55,6 +57,10 @@ auto CSettingsJson::LoadConfig( const std::string& JsonFile ) -> void
 			GetFloatJson( SettingsAimPreview , XorStr( "YawSmoothing" ) , Settings::AimPreview::YawSmoothing , 0.f , 100.f );
 			GetIntJson( SettingsAimPreview , XorStr( "HitChance" ) , Settings::AimPreview::HitChance , 0 , 100 );
 			GetIntJson( SettingsAimPreview , XorStr( "FovRadius" ) , Settings::AimPreview::FovRadius , 25 , 500 );
+			if ( Settings::AimPreview::LegitMode )
+				Settings::AimPreview::FovRadius = Settings::AimPreview::FovRadius > 75
+					? 75
+					: Settings::AimPreview::FovRadius;
 			GetBoolJson( SettingsAimPreview , XorStr( "OnlyVisible" ) , Settings::AimPreview::OnlyVisible );
 			GetBoolJson( SettingsAimPreview , XorStr( "SoulSteal" ) , Settings::AimPreview::SoulSteal );
 			GetBoolJson( SettingsAimPreview , XorStr( "AutoParry" ) , Settings::AimPreview::AutoParry );
@@ -158,6 +164,7 @@ auto CSettingsJson::SaveConfig( const std::string& JsonFile ) -> void
 					ConfigWriter.StartObject();
 					{
 						AddBoolJson( ConfigWriter , XorStr( "Active" ) , Settings::AimPreview::Active );
+						AddBoolJson( ConfigWriter , XorStr( "LegitMode" ) , Settings::AimPreview::LegitMode );
 						AddBoolJson( ConfigWriter , XorStr( "ShowFovCircle" ) , Settings::AimPreview::ShowFovCircle );
 						AddIntJson( ConfigWriter , XorStr( "TargetBonesMask" ) , Settings::AimPreview::TargetBonesMask );
 						AddIntJson( ConfigWriter , XorStr( "HeadChance" ) , Settings::AimPreview::HeadChance );

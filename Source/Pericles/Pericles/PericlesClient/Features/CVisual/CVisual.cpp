@@ -87,7 +87,8 @@ auto CVisual::OnRender() -> void
 auto CVisual::OnRenderAimPreview() -> void
 {
 	const ImVec2 ScreenCenter = ImGui::GetIO().DisplaySize * 0.5f;
-	const float FovRadius = static_cast<float>( std::clamp( Settings::AimPreview::FovRadius , 25 , 500 ) );
+	const int MaxFovRadius = Settings::AimPreview::LegitMode ? 75 : 500;
+	const float FovRadius = static_cast<float>( std::clamp( Settings::AimPreview::FovRadius , 25 , MaxFovRadius ) );
 
 	if ( Settings::AimPreview::ShowFovCircle )
 		GetRenderStackSystem()->DrawCircle( ScreenCenter , FovRadius , ImColor( 1.f , 1.f , 1.f , 0.65f ) );

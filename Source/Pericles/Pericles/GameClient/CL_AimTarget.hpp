@@ -21,7 +21,9 @@ struct AimTargetResult_t
 {
 	Vector3 m_WorldPosition;
 	ImVec2 m_ScreenPosition;
+	C_BaseEntity* m_TargetEntity = nullptr;
 	int m_EntityIndex = -1;
+	int m_HeroControllerIndex = -1;
 	int m_Health = 0;
 };
 
@@ -29,6 +31,7 @@ struct SoulTargetResult_t
 {
 	Vector3 m_WorldPosition;
 	ImVec2 m_ScreenPosition;
+	C_BaseEntity* m_TargetEntity = nullptr;
 	int m_EntityIndex = -1;
 };
 
@@ -129,15 +132,6 @@ inline auto ResolveAimTargetPoint( C_BaseEntity* pEntity , const CachedEntity_t:
 
 	const bool bHero = Type == CachedEntity_t::CITADEL_PLAYER_CONTROLLER;
 	const bool bObjective = Type == CachedEntity_t::NPC_OBJECTIVE;
-	const char* HeroBoneNames[] =
-	{
-		szSelectedBone,
-		"head",
-		"head_end",
-		"neck_0",
-		"spine_1",
-		"chest"
-	};
 	const char* NpcHeadBoneNames[] =
 	{
 		"head",
@@ -150,12 +144,21 @@ inline auto ResolveAimTargetPoint( C_BaseEntity* pEntity , const CachedEntity_t:
 
 	if ( !bObjective && AimEntityHasSkeleton( pEntity ) )
 	{
-		const char* const* pBoneNames = bHero ? HeroBoneNames : NpcHeadBoneNames;
 		if ( GetCL_Bones()->PrepareEntityBones( pEntity ) )
 		{
+			// A hero selection must resolve to the requested bone. Falling back to
+			// head/chest here made the UI report one bone while the shot used another.
+			if ( bHero )
+			{
+				if ( !szSelectedBone )
+					return {};
+
+				return GetCL_Bones()->GetPreparedBonePositionByName( pEntity , szSelectedBone );
+			}
+
 			for ( int BoneIndex = 0; BoneIndex < 6; ++BoneIndex )
 			{
-				const char* szBoneName = pBoneNames[BoneIndex];
+				const char* szBoneName = NpcHeadBoneNames[BoneIndex];
 				if ( !szBoneName )
 					continue;
 
@@ -187,7 +190,8 @@ inline auto FindBestAimTarget( CCitadelPlayerController* pLocalController , cons
 		return false;
 
 	const ImVec2 ScreenCenter = DisplaySize * 0.5f;
-	const float FovRadius = static_cast<float>( std::clamp( Settings::AimPreview::FovRadius , 25 , 500 ) );
+	const int MaxFovRadius = Settings::AimPreview::LegitMode ? 75 : 500;
+	const float FovRadius = static_cast<float>( std::clamp( Settings::AimPreview::FovRadius , 25 , MaxFovRadius ) );
 	const float MaxDistanceSquared = FovRadius * FovRadius;
 	const uint8 LocalTeam = pLocalController->m_iTeamNum();
 	const int Priority = std::clamp( Settings::AimPreview::TargetPriority , 0 , 1 );
@@ -298,7 +302,13 @@ inline auto FindBestAimTarget( CCitadelPlayerController* pLocalController , cons
 		BestHealth = Health;
 		OutTarget.m_WorldPosition = TargetPosition;
 		OutTarget.m_ScreenPosition = TargetScreen;
-		OutTarget.m_EntityIndex = CachedEntity.m_Handle.GetEntryIndex();
+		OutTarget.m_TargetEntity = pTargetEntity;
+		OutTarget.m_EntityIndex = CachedEntity.m_Type == CachedEntity_t::CITADEL_PLAYER_CONTROLLER
+			? static_cast<CCitadelPlayerController*>( CachedEntity.m_Handle.Get() )->m_hHeroPawn().GetEntryIndex()
+			: CachedEntity.m_Handle.GetEntryIndex();
+		OutTarget.m_HeroControllerIndex = CachedEntity.m_Type == CachedEntity_t::CITADEL_PLAYER_CONTROLLER
+			? CachedEntity.m_Handle.GetEntryIndex()
+			: -1;
 		OutTarget.m_Health = Health;
 	}
 
@@ -373,7 +383,8 @@ inline auto FindBestSoulTarget( const Vector3& ShotOrigin , SoulTargetResult_t& 
 
 	const float CurrentTime = pGlobalVars->m_flCurrentTime();
 	const ImVec2 ScreenCenter = DisplaySize * 0.5f;
-	const float FovRadius = static_cast<float>( std::clamp( Settings::AimPreview::FovRadius , 25 , 500 ) );
+	const int MaxFovRadius = Settings::AimPreview::LegitMode ? 75 : 500;
+	const float FovRadius = static_cast<float>( std::clamp( Settings::AimPreview::FovRadius , 25 , MaxFovRadius ) );
 	const float MaxDistanceSquared = FovRadius * FovRadius;
 	float BestDistanceSquared = std::numeric_limits<float>::max();
 	bool bFoundTarget = false;
@@ -424,6 +435,7 @@ inline auto FindBestSoulTarget( const Vector3& ShotOrigin , SoulTargetResult_t& 
 		BestDistanceSquared = DistanceSquared;
 		OutTarget.m_WorldPosition = SoulPosition;
 		OutTarget.m_ScreenPosition = SoulScreen;
+		OutTarget.m_TargetEntity = pSoul;
 		OutTarget.m_EntityIndex = CachedEntity.m_Handle.GetEntryIndex();
 	}
 

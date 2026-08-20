@@ -41,7 +41,12 @@ auto CL_Trace::TraceToBoneEntity( CUserCmd* CUserCmd ) -> std::pair<uint64_t , C
 			/*DEV_LOG( "Trace: %s , %s\n" , GameTrace.pHitBox->m_sBoneName().Get(), 
 					 GameTrace.pHitEntity->GetSchemaClassBinding()->m_bindingName );*/
 
-			return { hash_64_fnv1a_const( GameTrace.pHitBox->m_sBoneName().Get() ) , GameTrace.pHitEntity };
+			if ( GameTrace.pHitBox && GameTrace.pHitEntity )
+			{
+				const char* szBoneName = GameTrace.pHitBox->m_sBoneName().Get();
+				if ( szBoneName )
+					return { hash_64_fnv1a_const( szBoneName ) , GameTrace.pHitEntity };
+			}
 		}
 	}
 

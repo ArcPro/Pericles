@@ -142,7 +142,7 @@ auto CPericlesMenu::RenderSidebar() -> void
 
 	CategoryHeading( XorStr( "Visuals" ) );
 	NavigationItem( XorStr( "General" ), Page::VisualGeneral );
-	NavigationItem( XorStr( "Hero ESP" ), Page::HeroEsp );
+	NavigationItem( XorStr( "Hero ESSP" ), Page::HeroEsp );
 	NavigationItem( XorStr( "Unit ESP" ), Page::UnitEsp );
 	NavigationItem( XorStr( "Colors" ), Page::Colors );
 
@@ -222,6 +222,7 @@ auto CPericlesMenu::RenderAimbotPage() -> void
 	if ( BeginSettingsTable( XorStr( "##AimActivationTable" ) ) )
 	{
 		ToggleRow( XorStr( "Enable aim" ), XorStr( "Enables target selection within the FOV." ), XorStr( "##AimActive" ), Settings::AimPreview::Active );
+		ToggleRow( XorStr( "Legit mode" ), XorStr( "Uses camera-origin redirection only and limits the targeting radius to 75 px." ), XorStr( "##AimLegitMode" ), Settings::AimPreview::LegitMode );
 		ToggleRow( XorStr( "Show FOV circle" ), XorStr( "Draws the selection area at the center of the screen." ), XorStr( "##AimShowFov" ), Settings::AimPreview::ShowFovCircle );
 		ToggleRow( XorStr( "Visible targets only" ), XorStr( "Ignores targets when the selected point is obstructed." ), XorStr( "##AimVisibleOnly" ), Settings::AimPreview::OnlyVisible );
 		EndSettingsTable();
@@ -238,7 +239,9 @@ auto CPericlesMenu::RenderAimbotPage() -> void
 		const char* TargetPriorities[] = { "Closest to crosshair", "Lowest health" };
 		ComboRow( XorStr( "Priority" ), XorStr( "Selects a target inside the circle by screen distance or current health." ), XorStr( "##AimTargetPriority" ), Settings::AimPreview::TargetPriority, TargetPriorities, IM_ARRAYSIZE( TargetPriorities ) );
 		SliderIntRow( XorStr( "Hit chance" ), XorStr( "Percentage of firing commands redirected toward the target." ), XorStr( "##AimHitChance" ), Settings::AimPreview::HitChance, 0, 100, XorStr( "%d %%" ) );
-		SliderIntRow( XorStr( "FOV radius" ), XorStr( "Maximum targeting radius measured on screen." ), XorStr( "##AimFovRadius" ), Settings::AimPreview::FovRadius, 25, 500, XorStr( "%d px" ) );
+		if ( Settings::AimPreview::LegitMode )
+			Settings::AimPreview::FovRadius = std::clamp( Settings::AimPreview::FovRadius, 25, 75 );
+		SliderIntRow( XorStr( "FOV radius" ), XorStr( "Maximum targeting radius measured on screen. Legit mode is capped at 75 px." ), XorStr( "##AimFovRadius" ), Settings::AimPreview::FovRadius, 25, Settings::AimPreview::LegitMode ? 75 : 500, XorStr( "%d px" ) );
 		SliderFloatRow( XorStr( "Pitch smoothing" ), XorStr( "Smooths vertical movement for more natural behavior." ), XorStr( "##AimPitchSmoothing" ), Settings::AimPreview::PitchSmoothing, 0.f, 100.f, XorStr( "%.1f %%" ) );
 		SliderFloatRow( XorStr( "Yaw smoothing" ), XorStr( "Smooths horizontal movement for more natural behavior." ), XorStr( "##AimYawSmoothing" ), Settings::AimPreview::YawSmoothing, 0.f, 100.f, XorStr( "%.1f %%" ) );
 		EndSettingsTable();

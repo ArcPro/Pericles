@@ -1,10 +1,9 @@
 #pragma once
 
-#include <Common/Common.hpp>
+#include <cstdint>
 
 class CCitadelInput;
 
-auto Hook_CreateMove( CCitadelInput* pCitadelInput , uint32_t split_screen_index , char a3 ) -> void;
+void Hook_CreateMove(CCitadelInput* input, uint32_t splitScreenIndex, char argument);
 
-using CreateMove_t = decltype( &Hook_CreateMove );
-inline CreateMove_t CreateMove_o = nullptr;
+extern void (*CreateMove_o)(CCitadelInput*, uint32_t, char);

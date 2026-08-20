@@ -74,19 +74,14 @@ namespace Math
 
     auto CalcAngle( const Vector3& src , const Vector3& dst ) -> QAngle
     {
-        QAngle vAngle;
+        const Vector3 direction = dst - src;
+        const float horizontal = std::hypot( direction.m_x , direction.m_y );
 
-        Vector3 delta( ( src.m_x - dst.m_x ) , ( src.m_y - dst.m_y ) , ( src.m_z - dst.m_z ) );
-        double hyp = sqrt( delta.m_x * delta.m_x + delta.m_y * delta.m_y );
-
-        vAngle.m_x = float( atanf( float( delta.m_z / hyp ) ) * 57.295779513082f );
-        vAngle.m_y = float( atanf( float( delta.m_y / delta.m_x ) ) * 57.295779513082f );
-        vAngle.m_z = 0.0f;
-
-        if ( delta.m_x >= 0.0 )
-            vAngle.m_y += 180.0f;
-
-        return vAngle;
+        QAngle angle;
+        angle.m_x = RAD2DEG( std::atan2( -direction.m_z , horizontal ) );
+        angle.m_y = RAD2DEG( std::atan2( direction.m_y , direction.m_x ) );
+        angle.m_z = 0.f;
+        return angle;
     }
 
     auto VectorTransform( const Vector3& vIn1 , matrix3x4_t& vIn2 , Vector3& vOut ) -> void

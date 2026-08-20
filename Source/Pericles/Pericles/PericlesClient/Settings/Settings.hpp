@@ -8,6 +8,7 @@ namespace Settings
 	{
 		// Shared target-selection and visual-preview settings.
 		inline auto Active = false;
+		inline auto LegitMode = false;
 		inline auto ShowFovCircle = true;
 		inline auto TargetBonesMask = 1;
 		inline auto HeadChance = 50;
