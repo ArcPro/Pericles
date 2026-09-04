@@ -24,6 +24,7 @@ struct AimTargetResult_t
 	C_BaseEntity* m_TargetEntity = nullptr;
 	int m_EntityIndex = -1;
 	int m_HeroControllerIndex = -1;
+	int m_BoneIndex = -1;
 	int m_Health = 0;
 };
 
@@ -47,6 +48,20 @@ inline constexpr const char* g_AimTargetBones[] =
 	"leg_lower_R"
 };
 
+inline auto GetAimTargetBoneIndex( const char* szBoneName ) -> int
+{
+	if ( !szBoneName )
+		return -1;
+
+	for ( int Index = 0; Index < static_cast<int>( std::size( g_AimTargetBones ) ); ++Index )
+	{
+		if ( strcmp( g_AimTargetBones[Index], szBoneName ) == 0 )
+			return Index;
+	}
+
+	return -1;
+}
+
 inline auto NormalizeAimBoneMask() -> int
 {
 	constexpr int ValidMask = ( 1 << static_cast<int>( std::size( g_AimTargetBones ) ) ) - 1;
@@ -69,7 +84,7 @@ inline auto GetFirstSelectedAimBone() -> const char*
 	return g_AimTargetBones[0];
 }
 
-inline auto GetRandomSelectedAimBone() -> const char*
+inline auto GetAutomaticSelectedAimBoneIndex() -> int
 {
 	const int Mask = NormalizeAimBoneMask();
 	constexpr int HeadIndex = 0;
@@ -83,6 +98,11 @@ inline auto GetRandomSelectedAimBone() -> const char*
 	}
 
 	static uint32_t RandomState = ( static_cast<uint32_t>( GetTickCount64() ) ^ 0x9E3779B9u ) | 1u;
+	static int CurrentBoneIndex = -1;
+	static int HeadQuota = 0;
+	static int LastMask = -1;
+	static int LastHeadChance = -1;
+	static ULONGLONG NextBoneSelectionAt = 0;
 	const auto NextRandom = []() -> uint32_t
 	{
 		RandomState ^= RandomState << 13;
@@ -91,21 +111,117 @@ inline auto GetRandomSelectedAimBone() -> const char*
 		return RandomState;
 	};
 
-	const bool bHeadSelected = ( Mask & ( 1 << HeadIndex ) ) != 0;
-	if ( bHeadSelected )
-	{
-		if ( OtherSelectedCount == 0 )
-			return g_AimTargetBones[HeadIndex];
+	const int HeadChance = std::clamp( Settings::AimPreview::HeadChance , 0 , 100 );
+	const ULONGLONG Now = GetTickCount64();
+	const bool bSettingsChanged = LastMask != Mask || LastHeadChance != HeadChance;
 
-		const int HeadChance = std::clamp( Settings::AimPreview::HeadChance , 0 , 100 );
-		if ( static_cast<int>( NextRandom() % 100u ) < HeadChance )
-			return g_AimTargetBones[HeadIndex];
+	// An os selection is kept for a fixed slot. Head probability is consumed
+	// once per slot, rather than once per rendered/CreateMove frame; transition
+	// frames therefore cannot inflate or reduce the configured percentage.
+	constexpr ULONGLONG BoneSelectionIntervalMs = 500;
+	if ( CurrentBoneIndex < 0 || bSettingsChanged || Now >= NextBoneSelectionAt )
+	{
+		if ( bSettingsChanged )
+		{
+			HeadQuota = 0;
+			LastMask = Mask;
+			LastHeadChance = HeadChance;
+		}
+
+		const bool bHeadSelected = ( Mask & ( 1 << HeadIndex ) ) != 0;
+		bool bChooseHead = bHeadSelected && OtherSelectedCount == 0;
+		if ( bHeadSelected && OtherSelectedCount > 0 )
+		{
+			HeadQuota += HeadChance;
+			if ( HeadQuota >= 100 )
+			{
+				HeadQuota -= 100;
+				bChooseHead = true;
+			}
+		}
+
+		if ( bChooseHead )
+		{
+			CurrentBoneIndex = HeadIndex;
+		}
+		else if ( OtherSelectedCount > 0 )
+		{
+			int OtherSlot = static_cast<int>( NextRandom() % static_cast<uint32_t>( OtherSelectedCount ) );
+			if ( OtherSelectedCount > 1 && OtherSelectedIndices[OtherSlot] == CurrentBoneIndex )
+				OtherSlot = ( OtherSlot + 1 ) % OtherSelectedCount;
+			CurrentBoneIndex = OtherSelectedIndices[OtherSlot];
+		}
+		else
+		{
+			CurrentBoneIndex = HeadIndex;
+		}
+
+		NextBoneSelectionAt = Now + BoneSelectionIntervalMs;
 	}
 
-	// The probability left after the head roll is shared uniformly by every
-	// other selected bone. If the head is not selected, all selected bones keep
-	// an equal probability.
-	return g_AimTargetBones[OtherSelectedIndices[NextRandom() % static_cast<uint32_t>( OtherSelectedCount )]];
+	return CurrentBoneIndex;
+}
+
+inline auto GetAutomaticSelectedAimBone() -> const char*
+{
+	return g_AimTargetBones[GetAutomaticSelectedAimBoneIndex()];
+}
+
+inline auto ApplyAutomaticBoneTransition( AimTargetResult_t& Target , const int SelectedBoneIndex ) -> void
+{
+	if ( !Target.m_TargetEntity || Target.m_HeroControllerIndex < 0 || Target.m_WorldPosition.IsZero() )
+		return;
+
+	struct TransitionState_t
+	{
+		int TargetEntityIndex = -1;
+		int DestinationBoneIndex = -1;
+		Vector3 SourcePosition;
+		Vector3 LastOutputPosition;
+		ULONGLONG TransitionStartedAt = 0;
+		ULONGLONG LastUpdateAt = 0;
+	};
+
+	static TransitionState_t State;
+	const ULONGLONG Now = GetTickCount64();
+	constexpr ULONGLONG BoneTransitionDurationMs = 180;
+	constexpr ULONGLONG TransitionResetGapMs = 250;
+
+	const bool bReset = State.TargetEntityIndex != Target.m_EntityIndex
+		|| State.LastUpdateAt == 0
+		|| Now - State.LastUpdateAt > TransitionResetGapMs;
+
+	if ( bReset )
+	{
+		State.TargetEntityIndex = Target.m_EntityIndex;
+		State.DestinationBoneIndex = SelectedBoneIndex;
+		State.SourcePosition = Target.m_WorldPosition;
+		State.LastOutputPosition = Target.m_WorldPosition;
+		State.TransitionStartedAt = 0;
+	}
+	else if ( State.DestinationBoneIndex != SelectedBoneIndex )
+	{
+		State.DestinationBoneIndex = SelectedBoneIndex;
+		State.SourcePosition = State.LastOutputPosition;
+		State.TransitionStartedAt = Now;
+	}
+
+	if ( State.TransitionStartedAt != 0 )
+	{
+		const float LinearProgress = std::clamp(
+			static_cast<float>( Now - State.TransitionStartedAt )
+				/ static_cast<float>( BoneTransitionDurationMs ), 0.f, 1.f );
+		const float SmoothProgress = LinearProgress * LinearProgress * ( 3.f - 2.f * LinearProgress );
+		Target.m_WorldPosition = State.SourcePosition * ( 1.f - SmoothProgress )
+			+ Target.m_WorldPosition * SmoothProgress;
+
+		if ( LinearProgress >= 1.f )
+			State.TransitionStartedAt = 0;
+	}
+
+	State.LastOutputPosition = Target.m_WorldPosition;
+	State.LastUpdateAt = Now;
+	Math::WorldToScreen( Target.m_WorldPosition, Target.m_ScreenPosition );
 }
 
 inline auto AimEntityHasSkeleton( C_BaseEntity* pEntity ) -> bool
@@ -309,6 +425,7 @@ inline auto FindBestAimTarget( CCitadelPlayerController* pLocalController , cons
 		OutTarget.m_HeroControllerIndex = CachedEntity.m_Type == CachedEntity_t::CITADEL_PLAYER_CONTROLLER
 			? CachedEntity.m_Handle.GetEntryIndex()
 			: -1;
+		OutTarget.m_BoneIndex = GetAimTargetBoneIndex( szSelectedBone );
 		OutTarget.m_Health = Health;
 	}
 

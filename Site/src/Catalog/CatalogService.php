@@ -67,6 +67,7 @@ final class CatalogService
 
         $this->beginWriteTransaction();
         try {
+            $this->activatePendingAccess($userId, $slug);
             $suffix = $this->driver === 'mysql' ? ' FOR UPDATE' : '';
             $statement = $this->database->prepare(
                 'SELECT s.id, s.status, s.expires_at, s.bound_device_id '
@@ -177,6 +178,33 @@ final class CatalogService
         return $subscription['expires_at'] === null
             || new DateTimeImmutable((string) $subscription['expires_at'], new DateTimeZone('UTC'))
                 > new DateTimeImmutable('now', new DateTimeZone('UTC'));
+    }
+
+    private function activatePendingAccess(int $userId, string $slug): void
+    {
+        try {
+            $statement = $this->database->prepare(
+                'SELECT s.id, pl.duration_days FROM subscriptions s INNER JOIN plans pl ON pl.id = s.plan_id '
+                . 'INNER JOIN products p ON p.id = s.product_id INNER JOIN product_games pg ON pg.product_id = p.id '
+                . 'INNER JOIN games g ON g.id = pg.game_id WHERE s.user_id = :user_id AND g.slug = :slug '
+                . "AND s.status = 'pending' LIMIT 1" . ($this->driver === 'mysql' ? ' FOR UPDATE' : '')
+            );
+            $statement->execute([':user_id' => $userId, ':slug' => $slug]);
+            $pending = $statement->fetch();
+            if (!is_array($pending) || (int) $pending['duration_days'] < 1) return;
+            $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+            $update = $this->database->prepare(
+                "UPDATE subscriptions SET status = 'active', activated_at = :now, starts_at = :now, started_at = :now, "
+                . 'expires_at = :expires_at, activation_deadline_at = NULL, updated_at = :now WHERE id = :id'
+            );
+            $update->execute([
+                ':now' => $now->format('Y-m-d H:i:s'),
+                ':expires_at' => $now->modify('+' . (int) $pending['duration_days'] . ' days')->format('Y-m-d H:i:s'),
+                ':id' => (int) $pending['id'],
+            ]);
+        } catch (\PDOException) {
+            // Commerce migration is optional for legacy/test schemas.
+        }
     }
 
     private function beginWriteTransaction(): void

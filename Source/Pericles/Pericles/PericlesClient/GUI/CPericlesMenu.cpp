@@ -242,6 +242,10 @@ auto CPericlesMenu::RenderAimbotPage() -> void
 		if ( Settings::AimPreview::LegitMode )
 			Settings::AimPreview::FovRadius = std::clamp( Settings::AimPreview::FovRadius, 25, 75 );
 		SliderIntRow( XorStr( "FOV radius" ), XorStr( "Maximum targeting radius measured on screen. Legit mode is capped at 75 px." ), XorStr( "##AimFovRadius" ), Settings::AimPreview::FovRadius, 25, Settings::AimPreview::LegitMode ? 75 : 500, XorStr( "%d px" ) );
+		if ( Settings::AimPreview::LegitMode )
+		{
+			SliderIntRow( XorStr( "Maximum origin shift" ), XorStr( "Limits the world-space projectile-origin displacement. Lower values reduce visible tracer arcs but also reduce effective long-range assistance." ), XorStr( "##AimLegitOriginShift" ), Settings::AimPreview::LegitMaxOriginShift, 5, 100, XorStr( "%d units" ) );
+		}
 		SliderFloatRow( XorStr( "Pitch smoothing" ), XorStr( "Smooths vertical movement for more natural behavior." ), XorStr( "##AimPitchSmoothing" ), Settings::AimPreview::PitchSmoothing, 0.f, 100.f, XorStr( "%.1f %%" ) );
 		SliderFloatRow( XorStr( "Yaw smoothing" ), XorStr( "Smooths horizontal movement for more natural behavior." ), XorStr( "##AimYawSmoothing" ), Settings::AimPreview::YawSmoothing, 0.f, 100.f, XorStr( "%.1f %%" ) );
 		EndSettingsTable();

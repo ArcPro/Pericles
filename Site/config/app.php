@@ -19,6 +19,12 @@ return [
     'module_rate_window' => max(10, (int) ($_ENV['MODULE_RATE_WINDOW'] ?? 60)),
     'module_signing_key_id' => $_ENV['MODULE_SIGNING_KEY_ID'] ?? 'pericles-modules-development-test',
     'module_signing_private_key_path' => $_ENV['MODULE_SIGNING_PRIVATE_KEY_PATH'] ?? '',
+    'password_reset_ttl' => max(300, (int) ($_ENV['PASSWORD_RESET_TTL'] ?? 1800)),
+    'password_reset_limit' => max(1, (int) ($_ENV['PASSWORD_RESET_LIMIT'] ?? 3)),
+    'mail_from' => $_ENV['MAIL_FROM'] ?? 'no-reply@pericles.gg',
+    'payment_provider' => trim((string) ($_ENV['PAYMENT_PROVIDER'] ?? '')),
+    'payment_checkout_url' => trim((string) ($_ENV['PAYMENT_CHECKOUT_URL'] ?? '')),
+    'payment_webhook_secret' => (string) ($_ENV['PAYMENT_WEBHOOK_SECRET'] ?? ''),
     'db' => [
         'host' => $_ENV['DB_HOST'] ?? '127.0.0.1',
         'port' => (int)($_ENV['DB_PORT'] ?? 3306),

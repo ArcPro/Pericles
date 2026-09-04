@@ -57,6 +57,7 @@ auto CSettingsJson::LoadConfig( const std::string& JsonFile ) -> void
 			GetFloatJson( SettingsAimPreview , XorStr( "YawSmoothing" ) , Settings::AimPreview::YawSmoothing , 0.f , 100.f );
 			GetIntJson( SettingsAimPreview , XorStr( "HitChance" ) , Settings::AimPreview::HitChance , 0 , 100 );
 			GetIntJson( SettingsAimPreview , XorStr( "FovRadius" ) , Settings::AimPreview::FovRadius , 25 , 500 );
+			GetIntJson( SettingsAimPreview , XorStr( "LegitMaxOriginShift" ) , Settings::AimPreview::LegitMaxOriginShift , 5 , 100 );
 			if ( Settings::AimPreview::LegitMode )
 				Settings::AimPreview::FovRadius = Settings::AimPreview::FovRadius > 75
 					? 75
@@ -173,6 +174,7 @@ auto CSettingsJson::SaveConfig( const std::string& JsonFile ) -> void
 						AddFloatJson( ConfigWriter , XorStr( "YawSmoothing" ) , Settings::AimPreview::YawSmoothing );
 						AddIntJson( ConfigWriter , XorStr( "HitChance" ) , Settings::AimPreview::HitChance );
 						AddIntJson( ConfigWriter , XorStr( "FovRadius" ) , Settings::AimPreview::FovRadius );
+						AddIntJson( ConfigWriter , XorStr( "LegitMaxOriginShift" ) , Settings::AimPreview::LegitMaxOriginShift );
 						AddBoolJson( ConfigWriter , XorStr( "OnlyVisible" ) , Settings::AimPreview::OnlyVisible );
 						AddBoolJson( ConfigWriter , XorStr( "SoulSteal" ) , Settings::AimPreview::SoulSteal );
 						AddBoolJson( ConfigWriter , XorStr( "AutoParry" ) , Settings::AimPreview::AutoParry );

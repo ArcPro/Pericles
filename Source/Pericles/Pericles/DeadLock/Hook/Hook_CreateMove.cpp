@@ -273,8 +273,18 @@ auto Hook_CreateMove(CCitadelInput* pCitadelInput, uint32_t split_screen_index, 
         AimTargetResult_t BestTarget;
         SoulTargetResult_t BestSoul;
         const Vector3 SoulShotOrigin = pLocalPawn ? pLocalPawn->GetEyeOrigin() : Vector3{};
+        const int SelectedAimBoneIndex = GetAutomaticSelectedAimBoneIndex();
         const bool bHaveSoulTarget = Settings::AimPreview::SoulSteal && FindBestSoulTarget(SoulShotOrigin, BestSoul);
-        const bool bHaveAimTarget = !bHaveSoulTarget && Settings::AimPreview::Active && FindBestAimTargetWithFallback(pLocalController, GetRandomSelectedAimBone(), BestTarget);
+        const bool bHaveAimTarget = !bHaveSoulTarget && Settings::AimPreview::Active
+            && FindBestAimTargetWithFallback(pLocalController, g_AimTargetBones[SelectedAimBoneIndex], BestTarget);
+
+        if (bHaveAimTarget)
+        {
+            const int EffectiveBoneIndex = BestTarget.m_BoneIndex >= 0
+                ? BestTarget.m_BoneIndex
+                : SelectedAimBoneIndex;
+            ApplyAutomaticBoneTransition(BestTarget, EffectiveBoneIndex);
+        }
 
         GetVisual()->UpdateAimPreviewTarget(bHaveSoulTarget, BestSoul.m_ScreenPosition, bHaveAimTarget, BestTarget.m_ScreenPosition);
 
@@ -450,6 +460,11 @@ auto Hook_CreateMove(CCitadelInput* pCitadelInput, uint32_t split_screen_index, 
                     && deviationDegrees > MaxOriginRedirectAngle
                     && pUserCmd->cmd.has_ang_camera_angles();
 
+                const float maxLegitOriginShift = static_cast<float>(
+                    std::clamp(Settings::AimPreview::LegitMaxOriginShift, 5, 100));
+                const bool bOriginShiftAllowed = !Settings::AimPreview::LegitMode
+                    || originShift <= maxLegitOriginShift;
+
                 QAngle redirectedShotAngles = Math::CalcAngle(originalCameraPosition, finalTargetPos);
                 redirectedShotAngles.Normalize();
                 redirectedShotAngles.Clamp();
@@ -457,8 +472,9 @@ auto Hook_CreateMove(CCitadelInput* pCitadelInput, uint32_t split_screen_index, 
                 const Vector3& traceOrigin = bUseAngleRedirect
                     ? originalCameraPosition
                     : redirectedCameraPosition;
-                const bool bShotPathClear = GetCL_Trace()->IsEntityVisibleAtPoint(
-                    traceOrigin, finalTargetPos, pTargetEntity);
+                const bool bShotPathClear = bOriginShiftAllowed
+                    && GetCL_Trace()->IsEntityVisibleAtPoint(
+                        traceOrigin, finalTargetPos, pTargetEntity);
 
                 const bool bWritten = bShotPathClear && (bUseAngleRedirect
                     ? WriteCameraAngles(pUserCmd->cmd, redirectedShotAngles)
@@ -476,7 +492,7 @@ auto Hook_CreateMove(CCitadelInput* pCitadelInput, uint32_t split_screen_index, 
                 {
                     LastPsilentLog = Now;
                     const auto& writtenCamera = pUserCmd->cmd.vec_camera_position();
-                    DEV_LOG("[psilent] target=%d controller=%d aimed=%d mode=%s deviation=%.2f clear=%d written=%d "
+                    DEV_LOG("[psilent] target=%d controller=%d aimed=%d mode=%s deviation=%.2f shift=%.2f allowed=%d clear=%d written=%d "
                             "shotAngle=(%.2f %.2f) cameraAngle=(%.2f %.2f) "
                             "redirectAngle=(%.2f %.2f) "
                             "bone=(%.2f %.2f %.2f) orig=(%.2f %.2f %.2f) "
@@ -484,6 +500,7 @@ auto Hook_CreateMove(CCitadelInput* pCitadelInput, uint32_t split_screen_index, 
                             finalTargetEntityIndex, finalHeroControllerIndex,
                             pUserCmd->cmd.has_enemy_hero_aimed_at() ? pUserCmd->cmd.enemy_hero_aimed_at() : -1,
                             bUseAngleRedirect ? "angle" : "origin", deviationDegrees,
+                            originShift, bOriginShiftAllowed ? 1 : 0,
                             bShotPathClear ? 1 : 0, bWritten ? 1 : 0,
                             commandAngles.m_x, commandAngles.m_y,
                             bHaveCameraAngles ? cameraAngles.m_x : 0.f,

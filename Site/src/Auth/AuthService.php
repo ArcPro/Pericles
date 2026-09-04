@@ -47,7 +47,7 @@ final class AuthService
         ];
     }
 
-    public function register(string $email, string $password, string $displayName = ''): array
+    public function register(string $email, string $password, string $displayName = '', bool $termsAccepted = true): array
     {
         $email = self::normalizeEmail($email);
         if ($email === '' || strlen($email) > 254 || filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
@@ -56,6 +56,7 @@ final class AuthService
         if (strlen($password) < 10 || strlen($password) > 1024) {
             throw new ApiException('validation_error', 400, 'The password must contain at least 10 characters.');
         }
+        if (!$termsAccepted) throw new ApiException('terms_required', 400, 'Accept the Terms and Privacy Policy to create your account.');
 
         $displayName = trim($displayName);
         if ($displayName !== '' && (strlen($displayName) > 80 || preg_match('/[\x00-\x1F\x7F]/', $displayName) === 1)) {
@@ -86,8 +87,16 @@ final class AuthService
             throw $exception;
         }
 
+        $userId = (int) $this->database->lastInsertId();
+        try {
+            $accept = $this->database->prepare('UPDATE users SET terms_version=:version,terms_accepted_at=:now WHERE id=:id');
+            $accept->execute([':version'=>'2026-ux-1',':now'=>gmdate('Y-m-d H:i:s'),':id'=>$userId]);
+        } catch (\PDOException) {
+            // Compatible with installations pending migration 009.
+        }
+
         return [
-            'id' => (string) $this->database->lastInsertId(),
+            'id' => (string) $userId,
             'email' => $email,
             'status' => 'active',
         ];

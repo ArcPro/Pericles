@@ -2,6 +2,37 @@
 
 PHP 8.2/MySQL API for the Pericles launcher. The recommended Apache document root is `Site/public`. Every module route requires a Bearer token whose session is linked to a cryptographically verified device.
 
+The public storefront, customer account, checkout, and administration use the same MySQL catalog. `games` is the canonical game list and every game cover is read from `games.image_url`.
+
+## Commercial storefront
+
+Migration `008_commerce_platform.sql` adds commerce, content, password reset, support, downtime, orders, and payments. Apply it before serving the storefront:
+
+```powershell
+php bin/migrate.php
+```
+
+Main routes:
+
+- `/enhancements` and `/enhancements/{game-slug}`: database-driven catalog and Access Plans;
+- `/checkout/{token}`: checkout that survives sign-in or registration;
+- `/status` and `/changelog`: published product state and updates;
+- `/account`: customer Enhancements, access, devices, documentation, billing, and support;
+- `/admin/products`, `/admin/payments`, and `/admin/support`: commercial management.
+
+Commercial environment variables:
+
+```env
+PASSWORD_RESET_TTL=1800
+PASSWORD_RESET_LIMIT=3
+MAIL_FROM=no-reply@pericles.gg
+PAYMENT_PROVIDER=
+PAYMENT_CHECKOUT_URL=
+PAYMENT_WEBHOOK_SECRET=
+```
+
+Keep payment variables empty until a real hosted provider and signed webhook are configured. The site never simulates payment success and grants access only after a verified `paid` webhook.
+
 ## Installation
 
 ```powershell

@@ -207,6 +207,15 @@ final class AuthenticationTest extends TestCase
         );
     }
 
+    public function testRegisterRequiresTermsAcceptance(): void
+    {
+        $this->assertApiError(
+            fn () => $this->auth->register('new@pericles.local', 'CorrectPassword!', 'Ada', false),
+            'terms_required',
+            400
+        );
+    }
+
     public function testRateLimiterBlocksAfterConfiguredFailures(): void
     {
         $limiter = new LoginRateLimiter($this->database, 2, 300);

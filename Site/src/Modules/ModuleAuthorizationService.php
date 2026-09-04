@@ -17,6 +17,7 @@ final class ModuleAuthorizationService
 
     public function authorize(int $userId, int $deviceId, string $gameSlug, ?int $expectedVersionId = null): array
     {
+        $this->activatePastDeadline($userId, $gameSlug);
         $identityQuery = $this->database->prepare(
             'SELECT u.status AS user_status, d.user_id AS device_user_id, d.verified_at, d.revoked_at '
             . 'FROM users u LEFT JOIN devices d ON d.id = :device_id WHERE u.id = :user_id LIMIT 1'
@@ -136,5 +137,30 @@ final class ModuleAuthorizationService
             throw new ApiException('subscription_expired', 403, 'The subscription has expired.');
         }
         throw new ApiException('no_subscription', 403, 'An active subscription is required.');
+    }
+
+    private function activatePastDeadline(int $userId, string $gameSlug): void
+    {
+        try {
+            $statement = $this->database->prepare(
+                'SELECT s.id, s.activation_deadline_at, pl.duration_days FROM subscriptions s '
+                . 'INNER JOIN plans pl ON pl.id = s.plan_id INNER JOIN products p ON p.id = s.product_id '
+                . 'INNER JOIN product_games pg ON pg.product_id = p.id INNER JOIN games g ON g.id = pg.game_id '
+                . "WHERE s.user_id = :user_id AND g.slug = :slug AND s.status = 'pending' "
+                . 'AND s.activation_deadline_at <= :now LIMIT 1'
+            );
+            $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+            $statement->execute([':user_id' => $userId, ':slug' => $gameSlug, ':now' => $now->format('Y-m-d H:i:s')]);
+            $row = $statement->fetch();
+            if (!is_array($row) || (int) $row['duration_days'] < 1) return;
+            $start = new DateTimeImmutable((string) $row['activation_deadline_at'], new DateTimeZone('UTC'));
+            $update = $this->database->prepare(
+                "UPDATE subscriptions SET status = 'active', activated_at = :start, starts_at = :start, started_at = :start, "
+                . 'expires_at = :expires_at, activation_deadline_at = NULL, updated_at = :now WHERE id = :id'
+            );
+            $update->execute([':start' => $start->format('Y-m-d H:i:s'), ':expires_at' => $start->modify('+' . (int) $row['duration_days'] . ' days')->format('Y-m-d H:i:s'), ':now' => $now->format('Y-m-d H:i:s'), ':id' => (int) $row['id']]);
+        } catch (\PDOException) {
+            // Commerce migration is optional for legacy/test schemas.
+        }
     }
 }

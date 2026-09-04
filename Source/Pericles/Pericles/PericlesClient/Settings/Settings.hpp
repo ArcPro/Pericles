@@ -17,6 +17,7 @@ namespace Settings
 		inline auto YawSmoothing = 20.f;
 		inline auto HitChance = 75;
 		inline auto FovRadius = 180;
+		inline auto LegitMaxOriginShift = 24;
 		inline auto OnlyVisible = false;
 		inline auto SoulSteal = false;
 		inline auto AutoParry = false;
