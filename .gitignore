@@ -1,3 +1,6 @@
+# Local aggregate build/output directory
+/Build/
+
 # .NET build output
 **/bin/
 **/obj/
@@ -17,10 +20,14 @@ Site/.env
 # Private commercial modules and signing secrets
 Site/storage/modules/*
 !Site/storage/modules/.gitkeep
-DevelopmentModules/*
-!DevelopmentModules/.gitkeep
-Secrets/*
-!Secrets/.gitkeep
+
+# Retired root-level local outputs
+/Artifacts/
+/DevelopmentModules/
+/Secrets/
+/Tools/
+/client.dll
+/Pericles_*.log
 
 # Test and editor output
 .vs/
@@ -28,5 +35,3 @@ Secrets/*
 TestResults/
 *.user
 *.suo
-
-Build
