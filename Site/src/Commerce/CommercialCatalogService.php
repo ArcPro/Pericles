@@ -210,7 +210,13 @@ final class CommercialCatalogService
 
     private function media(int $productId): array
     {
-        $statement = $this->database->prepare('SELECT id,media_type,url,thumbnail_url,poster_url,title,alt_text FROM product_media WHERE product_id=:product_id AND is_public=1 AND is_active=1 ORDER BY sort_order,id');
+        try {
+            $statement = $this->database->prepare('SELECT id,media_type,url,thumbnail_url,poster_url,title,alt_text,is_primary FROM product_media WHERE product_id=:product_id AND is_public=1 AND is_active=1 ORDER BY is_primary DESC,sort_order,id');
+            $statement->execute([':product_id' => $productId]);
+            return $statement->fetchAll();
+        } catch (\PDOException) {
+            $statement = $this->database->prepare('SELECT id,media_type,url,thumbnail_url,poster_url,title,alt_text FROM product_media WHERE product_id=:product_id AND is_public=1 AND is_active=1 ORDER BY sort_order,id');
+        }
         $statement->execute([':product_id' => $productId]);
         return $statement->fetchAll();
     }

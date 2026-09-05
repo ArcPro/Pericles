@@ -155,10 +155,10 @@ final class ModuleAuthorizationService
             if (!is_array($row) || (int) $row['duration_days'] < 1) return;
             $start = new DateTimeImmutable((string) $row['activation_deadline_at'], new DateTimeZone('UTC'));
             $update = $this->database->prepare(
-                "UPDATE subscriptions SET status = 'active', activated_at = :start, starts_at = :start, started_at = :start, "
-                . 'expires_at = :expires_at, activation_deadline_at = NULL, updated_at = :now WHERE id = :id'
+                "UPDATE subscriptions SET status = 'active', activated_at = :activated_at, starts_at = :starts_at, started_at = :started_at, "
+                . 'expires_at = :expires_at, activation_deadline_at = NULL, updated_at = :updated_at WHERE id = :id'
             );
-            $update->execute([':start' => $start->format('Y-m-d H:i:s'), ':expires_at' => $start->modify('+' . (int) $row['duration_days'] . ' days')->format('Y-m-d H:i:s'), ':now' => $now->format('Y-m-d H:i:s'), ':id' => (int) $row['id']]);
+            $startSql=$start->format('Y-m-d H:i:s');$update->execute([':activated_at'=>$startSql,':starts_at'=>$startSql,':started_at'=>$startSql,':expires_at'=>$start->modify('+'.(int)$row['duration_days'].' days')->format('Y-m-d H:i:s'),':updated_at'=>$now->format('Y-m-d H:i:s'),':id'=>(int)$row['id']]);
         } catch (\PDOException) {
             // Commerce migration is optional for legacy/test schemas.
         }

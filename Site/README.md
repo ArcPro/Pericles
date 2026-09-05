@@ -6,7 +6,7 @@ The public storefront, customer account, checkout, and administration use the sa
 
 ## Commercial storefront
 
-Migration `008_commerce_platform.sql` adds commerce, content, password reset, support, downtime, orders, and payments. Apply it before serving the storefront:
+Migrations `008_commerce_platform.sql` through `011_support_category_compatibility.sql` add commerce, content, password reset, persistent support conversations and attachments, product operations, downtime compensation, orders, payments, safe application settings, and support-category compatibility. Apply all pending migrations before serving the storefront:
 
 ```powershell
 php bin/migrate.php
@@ -17,8 +17,8 @@ Main routes:
 - `/enhancements` and `/enhancements/{game-slug}`: database-driven catalog and Access Plans;
 - `/checkout/{token}`: checkout that survives sign-in or registration;
 - `/status` and `/changelog`: published product state and updates;
-- `/account`: customer Enhancements, access, devices, documentation, billing, and support;
-- `/admin/products`, `/admin/payments`, and `/admin/support`: commercial management.
+- `/account`: customer Enhancements, Access, devices, documentation, billing, and support;
+- `/admin/enhancements`, `/admin/orders`, `/admin/customer-access`, `/admin/access-keys`, and `/admin/support`: commercial operations.
 
 Commercial environment variables:
 
@@ -26,12 +26,27 @@ Commercial environment variables:
 PASSWORD_RESET_TTL=1800
 PASSWORD_RESET_LIMIT=3
 MAIL_FROM=no-reply@pericles.gg
-PAYMENT_PROVIDER=
+SUPPORT_EMAIL=support@pericles.gg
+LAUNCHER_DOWNLOAD_URL=
+PAYMENT_PROVIDER=stripe
+STRIPE_PUBLISHABLE_KEY=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+
+# Legacy generic provider settings; unused by Stripe Elements.
 PAYMENT_CHECKOUT_URL=
 PAYMENT_WEBHOOK_SECRET=
 ```
 
-Keep payment variables empty until a real hosted provider and signed webhook are configured. The site never simulates payment success and grants access only after a verified `paid` webhook.
+Stripe uses an embedded Payment Element backed by a Checkout Session in `payment` mode. Product names, plan names, amounts, and currencies come from the immutable Pericles order snapshot through inline `price_data`, so new products and future admin price changes need no Stripe code change.
+
+Configure a Stripe webhook endpoint at:
+
+```text
+https://events.mazebank.fr/public/api/v1/payments/stripe/webhook
+```
+
+Configure it as a **snapshot-event** destination, subscribe it to `checkout.session.completed` and `checkout.session.async_payment_succeeded`, then copy its signing secret (`whsec_...`) into `STRIPE_WEBHOOK_SECRET`. Keep both Stripe secrets outside Git and the public document root. The site never trusts the browser return page to grant Access: it validates Stripe's signature, order reference, amount, and currency, then processes the event idempotently.
 
 ## Installation
 

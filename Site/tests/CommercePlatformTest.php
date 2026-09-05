@@ -7,7 +7,10 @@ namespace Pericles\Tests;
 use PDO;
 use Pericles\Commerce\CheckoutService;
 use Pericles\Commerce\CommercialCatalogService;
+use Pericles\Commerce\StripePaymentService;
+use Pericles\Http\ApiException;
 use PHPUnit\Framework\TestCase;
+use Stripe\WebhookSignature;
 
 final class CommercePlatformTest extends TestCase
 {
@@ -81,6 +84,124 @@ final class CommercePlatformTest extends TestCase
         self::assertNotNull($access['activation_deadline_at']);
         self::assertNull($access['expires_at']);
         self::assertSame(1,(int)$this->database->query('SELECT COUNT(*) FROM payments')->fetchColumn());
+    }
+
+    public function testStripeElementsSessionUsesThePericlesOrderSnapshot(): void
+    {
+        $checkout=$this->checkout->start('deadlock',1,1,'product-page');
+        $this->checkout->createOrder($checkout['token'],1,'2026-08-30',true);
+        $order=$this->checkout->orderForCheckout($checkout['token'],1);
+        $captured=[];
+        $stripe=new StripePaymentService(
+            $this->checkout,
+            'pk_test_example',
+            'sk_test_example',
+            'whsec_example',
+            'https://events.example.test/public/',
+            static function(array $params,array $options) use (&$captured):array {
+                $captured=['params'=>$params,'options'=>$options];
+                return ['id'=>'cs_test_pericles','client_secret'=>'cs_test_pericles_secret_example'];
+            }
+        );
+
+        $session=$stripe->createEmbeddedSession($order,$checkout['token']);
+
+        self::assertSame('cs_test_pericles_secret_example',$session['client_secret']);
+        self::assertSame('elements',$captured['params']['ui_mode']);
+        self::assertSame('payment',$captured['params']['mode']);
+        self::assertArrayNotHasKey('submit_type',$captured['params']);
+        self::assertSame(2499,$captured['params']['line_items'][0]['price_data']['unit_amount']);
+        self::assertSame('eur',$captured['params']['line_items'][0]['price_data']['currency']);
+        self::assertSame('Deadlock Enhancement',$captured['params']['line_items'][0]['price_data']['product_data']['name']);
+        self::assertSame('30 Days Access',$captured['params']['line_items'][0]['price_data']['product_data']['description']);
+        self::assertSame($order['order_number'],$captured['params']['client_reference_id']);
+        self::assertSame($order['order_number'],$captured['params']['metadata']['pericles_order_number']);
+        self::assertStringContainsString('/checkout/'.$checkout['token'].'?stripe_return=1&session_id={CHECKOUT_SESSION_ID}',$captured['params']['return_url']);
+        $requestFingerprint=hash(
+            'sha256',
+            json_encode($captured['params'],JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR)
+        );
+        self::assertSame(
+            'pericles-checkout-'.$order['order_number'].'-'.$requestFingerprint,
+            $captured['options']['idempotency_key']
+        );
+    }
+
+    public function testPaidStripeWebhookIsVerifiedAndGrantsAccess(): void
+    {
+        $checkout=$this->checkout->start('deadlock',1,1,'product-page');
+        $order=$this->checkout->createOrder($checkout['token'],1,'2026-08-30',true);
+        $event=[
+            'id'=>'evt_stripe_paid',
+            'object'=>'event',
+            'type'=>'checkout.session.completed',
+            'data'=>['object'=>[
+                'id'=>'cs_test_paid',
+                'object'=>'checkout.session',
+                'payment_status'=>'paid',
+                'payment_intent'=>'pi_test_paid',
+                'client_reference_id'=>$order['order_number'],
+                'metadata'=>['pericles_order_number'=>$order['order_number']],
+                'amount_total'=>2499,
+                'currency'=>'eur',
+            ]],
+        ];
+        $stripe=new StripePaymentService(
+            $this->checkout,
+            'pk_test_example',
+            'sk_test_example',
+            'whsec_example',
+            'https://events.example.test/public'
+        );
+        $payload=json_encode($event,JSON_THROW_ON_ERROR);
+        $signature=WebhookSignature::generateSignatureHeader($payload,'whsec_example');
+
+        $result=$stripe->handleWebhook($payload,$signature);
+
+        self::assertTrue($result['processed']);
+        self::assertSame('paid',$this->database->query('SELECT status FROM orders')->fetchColumn());
+        self::assertSame('pending',$this->database->query('SELECT status FROM subscriptions')->fetchColumn());
+        self::assertSame('stripe',$this->database->query('SELECT provider FROM payments')->fetchColumn());
+        self::assertSame('pi_test_paid',$this->database->query('SELECT provider_reference FROM payments')->fetchColumn());
+    }
+
+    public function testUnpaidStripeCheckoutDoesNotGrantAccess(): void
+    {
+        $checkout=$this->checkout->start('deadlock',1,1,'product-page');
+        $order=$this->checkout->createOrder($checkout['token'],1,'2026-08-30',true);
+        $event=[
+            'id'=>'evt_stripe_unpaid',
+            'type'=>'checkout.session.completed',
+            'data'=>['object'=>[
+                'payment_status'=>'unpaid',
+                'client_reference_id'=>$order['order_number'],
+            ]],
+        ];
+        $stripe=new StripePaymentService(
+            $this->checkout,'pk_test_example','sk_test_example','whsec_example','https://events.example.test/public',null,
+            static fn():array=>$event
+        );
+
+        $result=$stripe->handleWebhook('{}','t=1,v1=test');
+
+        self::assertFalse($result['processed']);
+        self::assertSame('pending',$this->database->query('SELECT status FROM orders')->fetchColumn());
+        self::assertSame(0,(int)$this->database->query('SELECT COUNT(*) FROM subscriptions')->fetchColumn());
+    }
+
+    public function testStripeWebhookRejectsAnInvalidSignature(): void
+    {
+        $stripe=new StripePaymentService(
+            $this->checkout,'pk_test_example','sk_test_example','whsec_example','https://events.example.test/public'
+        );
+
+        try {
+            $stripe->handleWebhook('{}','t=1,v1=invalid');
+            self::fail('An invalid Stripe signature must be rejected.');
+        } catch (ApiException $exception) {
+            self::assertSame('invalid_webhook_signature',$exception->errorCode);
+            self::assertSame(400,$exception->statusCode);
+        }
     }
 
     public function testRenewalStacksDurationAndLifetimeUpgradeRemovesExpiration(): void

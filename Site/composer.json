@@ -4,7 +4,8 @@
   "type": "project",
   "license": "proprietary",
   "require": {
-    "php": ">=8.0"
+    "php": ">=8.0",
+    "stripe/stripe-php": "^21.3"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.6"

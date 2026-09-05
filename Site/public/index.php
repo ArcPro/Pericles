@@ -14,6 +14,7 @@ use Pericles\Admin\AdminService;
 use Pericles\Catalog\CatalogService;
 use Pericles\Commerce\CheckoutService;
 use Pericles\Commerce\CommercialCatalogService;
+use Pericles\Commerce\StripePaymentService;
 use Pericles\Database;
 use Pericles\Device\DeviceService;
 use Pericles\Http\ApiException;
@@ -125,6 +126,31 @@ function consumeFlash(): ?array
     return $flash;
 }
 
+function logUnexpectedFailure(Throwable $exception, string $route): string
+{
+    $reference = strtoupper(bin2hex(random_bytes(4)));
+    $entry = sprintf(
+        'Pericles server error [%s] %s %s: %s (%s:%d)',
+        $reference,
+        strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')),
+        $route,
+        $exception::class . ': ' . $exception->getMessage(),
+        $exception->getFile(),
+        $exception->getLine()
+    );
+    $logDirectory = dirname(__DIR__) . '/storage/logs';
+    $written = false;
+    if ((is_dir($logDirectory) || @mkdir($logDirectory, 0750, true)) && is_writable($logDirectory)) {
+        $written = @file_put_contents(
+            $logDirectory . '/pericles.log',
+            '[' . gmdate('Y-m-d H:i:s') . " UTC] " . $entry . PHP_EOL,
+            FILE_APPEND | LOCK_EX
+        ) !== false;
+    }
+    if (!$written) error_log($entry);
+    return $reference;
+}
+
 function signInWebUser(array $user): never
 {
     session_regenerate_id(true);
@@ -147,9 +173,10 @@ try {
         throw new ApiException('https_required', 426, 'HTTPS is required.');
     }
 
-    $protectedWebRoute = $route === '/logout' || str_starts_with($route, '/account')
+    $protectedWebRoute = $route === '/logout' || str_starts_with($route, '/account') || str_starts_with($route, '/billing/')
         || str_starts_with($route, '/admin')
-        || in_array($route, ['/products', '/downloads', '/documentation', '/licenses', '/devices', '/activity', '/billing', '/settings', '/security'], true);
+        || str_starts_with($route, '/support-attachments/')
+        || in_array($route, ['/products', '/downloads', '/documentation', '/licenses', '/access', '/devices', '/activity', '/billing', '/settings', '/security'], true);
     if ($protectedWebRoute) {
         startWebSession(requestIsHttps());
         if (!isset($_SESSION['user_id'])) {
@@ -193,6 +220,13 @@ try {
     );
     $commercialCatalog = new CommercialCatalogService($database);
     $checkoutService = new CheckoutService($database);
+    $stripePayments = new StripePaymentService(
+        $checkoutService,
+        (string) $config['stripe_publishable_key'],
+        (string) $config['stripe_secret_key'],
+        (string) $config['stripe_webhook_secret'],
+        (string) $config['app_url']
+    );
     $accounts = new AccountService($database);
     $passwordReset = new PasswordResetService(
         $database,
@@ -202,10 +236,22 @@ try {
     $mail = new MailService((string) $config['mail_from'], (string) $config['app_url']);
     $supportService = new SupportService($database);
 
+    if ($route === '/api/v1/payments/stripe/webhook') {
+        requireMethod('POST');
+        $rawBody = file_get_contents('php://input');
+        JsonResponse::send(200, $stripePayments->handleWebhook(
+            is_string($rawBody) ? $rawBody : '',
+            trim((string) ($_SERVER['HTTP_STRIPE_SIGNATURE'] ?? ''))
+        ));
+    }
+
     if ($route === '/api/v1/payments/webhook') {
         requireMethod('POST');
         $secret = (string) $config['payment_webhook_secret'];
         $provider = (string) $config['payment_provider'];
+        if (strtolower($provider) === 'stripe') {
+            throw new ApiException('webhook_endpoint_retired', 410, 'Use the Stripe-signed webhook endpoint.');
+        }
         $signature = trim((string) ($_SERVER['HTTP_X_PERICLES_SIGNATURE'] ?? ''));
         $rawBody = file_get_contents('php://input');
         if ($secret === '' || $provider === '' || !is_string($rawBody)
@@ -230,7 +276,7 @@ try {
     $publicCommerceRoute = in_array($route, ['/', '/home', '/enhancements', '/status', '/changelog', '/support', '/checkout/start'], true)
         || isset($legalRoutes[$route])
         || preg_match('#^/enhancements/[a-z0-9]+(?:-[a-z0-9]+)*$#', $route)
-        || preg_match('#^/checkout/[A-Za-z0-9_-]{40,60}(?:/(?:order|pay))?$#', $route);
+        || preg_match('#^/checkout/[A-Za-z0-9_-]{40,60}(?:/(?:order|pay|stripe-session))?$#', $route);
     if ($publicCommerceRoute) {
         startWebSession(requestIsHttps());
         $publicUser = isset($_SESSION['user_id']) ? $accounts->profile((int) $_SESSION['user_id']) : null;
@@ -265,9 +311,20 @@ try {
             if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 try {
                     requireCsrf();
-                    $ticket=$supportService->createRequest($publicUser===null?null:(int)$publicUser['id'],$publicUser===null&&(is_string($_POST['email']??null))?$_POST['email']:null,is_string($_POST['subject']??null)?$_POST['subject']:'',is_string($_POST['category']??null)?$_POST['category']:'',is_string($_POST['message']??null)?$_POST['message']:'');
+                    $ticket=$supportService->createRequest(
+                        $publicUser===null?null:(int)$publicUser['id'],
+                        $publicUser===null&&(is_string($_POST['email']??null))?$_POST['email']:null,
+                        is_string($_POST['subject']??null)?$_POST['subject']:'',
+                        is_string($_POST['category']??null)?$_POST['category']:'',
+                        is_string($_POST['message']??null)?$_POST['message']:'',
+                        is_string($_POST['priority']??null)?$_POST['priority']:'normal',
+                        isset($_POST['product_id'])&&(int)$_POST['product_id']>0?(int)$_POST['product_id']:null,
+                        isset($_POST['order_id'])&&(int)$_POST['order_id']>0?(int)$_POST['order_id']:null,
+                        is_array($_FILES['attachments']??null)?$_FILES['attachments']:[]
+                    );
                     PublicPage::support($publicUser,$csrf,'Support request '.(string)$ticket['ticket_number'].' created.');
                 } catch(ApiException $exception){PublicPage::support($publicUser,$csrf,null,$exception->getMessage());}
+                catch(Throwable $exception){$reference=logUnexpectedFailure($exception,$route);PublicPage::support($publicUser,$csrf,null,'The support request could not be saved. Please try again or contact support with reference '.$reference.'.');}
             }
             requireMethod('GET'); PublicPage::support($publicUser,$csrf);
         }
@@ -295,13 +352,29 @@ try {
                 $row = $query->fetch(); $order = is_array($row) ? $row : null;
             }
             $flash = consumeFlash();
-            PublicPage::checkout($checkout, $publicUser, $csrf, $matches[1], $order, (string) $config['payment_checkout_url'] !== '', $flash === null ? null : (string) $flash['message']);
+            $message = $flash === null ? null : (string) $flash['message'];
+            if (isset($_GET['stripe_return'])) {
+                $message = is_array($order) && (string) $order['status'] === 'paid'
+                    ? 'Payment confirmed. Your Access is ready.'
+                    : 'Stripe received the payment attempt. Secure confirmation is still being processed.';
+                if (is_array($order) && (string) $order['status'] === 'pending') {
+                    $order['payment_processing'] = true;
+                }
+            }
+            $stripe = strtolower((string) $config['payment_provider']) === 'stripe' && $stripePayments->isConfigured()
+                ? [
+                    'publishable_key' => $stripePayments->publishableKey(),
+                    'session_url' => webPath('/checkout/' . rawurlencode($matches[1]) . '/stripe-session'),
+                ]
+                : null;
+            PublicPage::checkout($checkout, $publicUser, $csrf, $matches[1], $order, $stripe, $message);
         }
         if (preg_match('#^/checkout/([A-Za-z0-9_-]{40,60})/order$#', $route, $matches)) {
             requireMethod('POST'); requireCsrf();
             if ($publicUser === null) { $_SESSION['checkout_token'] = $matches[1]; header('Location: ' . webPath('/login')); exit; }
             try {
-                $checkoutService->createOrder($matches[1], (int) $publicUser['id'], '2026-08-30', isset($_POST['immediate_delivery']));
+                $termsOfSale=$commercialCatalog->content('terms-of-sale');
+                $checkoutService->createOrder($matches[1], (int) $publicUser['id'], is_array($termsOfSale)?(string)$termsOfSale['version']:null, isset($_POST['immediate_delivery']));
                 redirectWithFlash('/checkout/' . $matches[1], 'success', 'Your order was created securely.');
             } catch (ApiException $exception) {
                 redirectWithFlash('/checkout/' . $matches[1], 'error', $exception->getMessage());
@@ -310,26 +383,28 @@ try {
         if (preg_match('#^/checkout/([A-Za-z0-9_-]{40,60})/pay$#', $route, $matches)) {
             requireMethod('POST'); requireCsrf();
             if ($publicUser === null) { $_SESSION['checkout_token'] = $matches[1]; header('Location: ' . webPath('/login')); exit; }
-            $checkout = $checkoutService->checkout($matches[1], (int) $publicUser['id']);
-            $query = $database->prepare('SELECT order_number FROM orders WHERE checkout_session_id = :id AND user_id = :user_id LIMIT 1');
-            $query->execute([':id' => (int) $checkout['id'], ':user_id' => (int) $publicUser['id']]);
-            $orderNumber = $query->fetchColumn();
-            $paymentUrl = (string) $config['payment_checkout_url'];
-            if (!is_string($orderNumber) || $paymentUrl === '' || filter_var($paymentUrl, FILTER_VALIDATE_URL) === false) {
-                redirectWithFlash('/checkout/' . $matches[1], 'error', 'Online payment is not configured. No charge was attempted.');
+            redirectWithFlash('/checkout/' . $matches[1], 'success', 'Use the secure Stripe payment form below.');
+        }
+        if (preg_match('#^/checkout/([A-Za-z0-9_-]{40,60})/stripe-session$#', $route, $matches)) {
+            requireMethod('POST'); requireCsrf();
+            if ($publicUser === null) {
+                throw new ApiException('authentication_required', 401, 'Sign in before starting payment.');
             }
-            $separator = str_contains($paymentUrl, '?') ? '&' : '?';
-            header('Location: ' . $paymentUrl . $separator . http_build_query(['order' => $orderNumber])); exit;
+            if (strtolower((string) $config['payment_provider']) !== 'stripe') {
+                throw new ApiException('payment_not_configured', 503, 'Stripe payment is not enabled. No charge was attempted.');
+            }
+            $order = $checkoutService->orderForCheckout($matches[1], (int) $publicUser['id']);
+            JsonResponse::send(201, $stripePayments->createEmbeddedSession($order, $matches[1]));
         }
     }
 
     $memberPageRoutes = [
-        '/products', '/downloads', '/documentation', '/account/changelog', '/licenses', '/devices', '/activity',
+        '/products', '/downloads', '/documentation', '/account/changelog', '/licenses', '/access', '/devices', '/activity',
         '/billing', '/account/support', '/settings', '/security',
     ];
     if (in_array($route, ['/login', '/auth', '/register', '/signup', '/forgot-password', '/reset-password', '/logout'], true)
         || in_array($route, $memberPageRoutes, true)
-        || str_starts_with($route, '/account') || str_starts_with($route, '/admin')) {
+        || str_starts_with($route, '/account') || str_starts_with($route, '/billing/') || str_starts_with($route, '/support-attachments/') || str_starts_with($route, '/admin')) {
         startWebSession(requestIsHttps());
         $csrf = (string) $_SESSION['csrf'];
 
@@ -511,16 +586,50 @@ try {
         if ($route === '/account/support' && ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             try {
                 requireCsrf();
-                $ticket = $supportService->create(
+                $ticket = $supportService->createRequest(
                     $webUserId,
+                    null,
                     is_string($_POST['subject'] ?? null) ? $_POST['subject'] : '',
                     is_string($_POST['category'] ?? null) ? $_POST['category'] : '',
-                    is_string($_POST['message'] ?? null) ? $_POST['message'] : ''
+                    is_string($_POST['message'] ?? null) ? $_POST['message'] : '',
+                    is_string($_POST['priority'] ?? null) ? $_POST['priority'] : 'normal',
+                    isset($_POST['product_id']) && (int) $_POST['product_id'] > 0 ? (int) $_POST['product_id'] : null,
+                    isset($_POST['order_id']) && (int) $_POST['order_id'] > 0 ? (int) $_POST['order_id'] : null,
+                    is_array($_FILES['attachments'] ?? null) ? $_FILES['attachments'] : []
                 );
                 redirectWithFlash('/account/support', 'success', 'Support ticket ' . (string) $ticket['ticket_number'] . ' created.');
             } catch (ApiException $exception) {
                 redirectWithFlash('/account/support', 'error', $exception->getMessage());
+            } catch (Throwable $exception) {
+                $reference=logUnexpectedFailure($exception,$route);
+                redirectWithFlash('/account/support','error','The support request could not be saved. Reference '.$reference.'.');
             }
+        }
+
+        if (preg_match('#^/account/support/(SUP-[A-Z0-9-]{8,24})/reply$#', $route, $matches)) {
+            requireMethod('POST'); requireCsrf();
+            try {
+                $supportService->replyForUser($matches[1], $webUserId, is_string($_POST['message'] ?? null) ? $_POST['message'] : '', is_array($_FILES['attachments'] ?? null) ? $_FILES['attachments'] : []);
+                redirectWithFlash('/account/support/' . rawurlencode($matches[1]), 'success', 'Your reply was added.');
+            } catch (ApiException $exception) { redirectWithFlash('/account/support/' . rawurlencode($matches[1]), 'error', $exception->getMessage()); }
+            catch (Throwable $exception) { $reference=logUnexpectedFailure($exception,$route);redirectWithFlash('/account/support/' . rawurlencode($matches[1]),'error','The reply could not be saved. Reference '.$reference.'.'); }
+        }
+
+        if (preg_match('#^/account/support/(SUP-[A-Z0-9-]{8,24})/solve$#', $route, $matches)) {
+            requireMethod('POST'); requireCsrf();
+            try { $supportService->markSolved($matches[1], $webUserId); redirectWithFlash('/account/support/' . rawurlencode($matches[1]), 'success', 'This ticket was marked resolved.'); }
+            catch (ApiException $exception) { redirectWithFlash('/account/support/' . rawurlencode($matches[1]), 'error', $exception->getMessage()); }
+        }
+
+        if (preg_match('#^/support-attachments/(\d+)$#', $route, $matches)) {
+            requireMethod('GET');
+            $isStaff=$authorization->can($webUserId,'support.manage');
+            $attachment=$supportService->attachmentForUser((int)$matches[1],$webUserId,$isStaff);
+            header('Content-Type: '.(string)$attachment['mime_type']);
+            header('Content-Length: '.(string)filesize((string)$attachment['path']));
+            header('Content-Disposition: attachment; filename="'.str_replace(['"',"\r","\n"],'',(string)$attachment['original_name']).'"');
+            header('X-Content-Type-Options: nosniff');
+            readfile((string)$attachment['path']); exit;
         }
 
         if (str_starts_with($route, '/admin')) {
@@ -529,13 +638,104 @@ try {
                 $admin = new AdminService($database);
                 $ipAddress = (string) ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
                 $adminPages = [
-                    '/admin' => 'overview', '/admin/users' => 'users', '/admin/licenses' => 'licenses',
-                    '/admin/products' => 'products', '/admin/payments' => 'payments',
-                    '/admin/support' => 'support', '/admin/audit' => 'audit', '/admin/settings' => 'settings',
+                    '/admin' => 'overview', '/admin/users' => 'users',
+                    '/admin/customer-access' => 'customer_access', '/admin/licenses' => 'customer_access',
+                    '/admin/access-keys' => 'access_keys',
+                    '/admin/enhancements' => 'enhancements', '/admin/products' => 'enhancements',
+                    '/admin/orders' => 'orders', '/admin/payments' => 'orders',
+                    '/admin/coupons' => 'coupons', '/admin/devices' => 'devices',
+                    '/admin/documentation' => 'documentation', '/admin/changelog' => 'changelog',
+                    '/admin/support' => 'support', '/admin/status' => 'status', '/admin/builds' => 'builds',
+                    '/admin/audit' => 'audit', '/admin/settings' => 'settings',
                 ];
+                if (preg_match('#^/admin/enhancements/(\d+)$#',$route,$matches)) {
+                    requireMethod('GET');
+                    if (!$authorization->can($webUserId,'content.manage') && !$authorization->can($webUserId,'commerce.manage')) throw new ApiException('forbidden',403,'You do not have the required permission.');
+                    $tab=is_string($_GET['tab']??null)?$_GET['tab']:'general';
+                    AdminPage::render($webEmail,$admin->dashboard($webUserId),$csrf,consumeFlash(),'product_editor',['product_id'=>(int)$matches[1],'tab'=>$tab]);
+                }
+                if (preg_match('#^/admin/users/(\d+)$#',$route,$matches)) {
+                    requireMethod('GET');$authorization->requirePermission($webUserId,'users.view');
+                    AdminPage::render($webEmail,$admin->dashboard($webUserId),$csrf,consumeFlash(),'user_detail',['user_detail'=>$admin->userDetail($webUserId,(int)$matches[1])]);
+                }
+                if (preg_match('#^/admin/orders/(PER-[A-Z0-9-]{8,32})$#',$route,$matches)) {
+                    requireMethod('GET');$authorization->requirePermission($webUserId,'commerce.view');
+                    AdminPage::render($webEmail,$admin->dashboard($webUserId),$csrf,consumeFlash(),'order_detail',['order_detail'=>$admin->orderDetail($webUserId,$matches[1])]);
+                }
+                if (preg_match('#^/admin/support/(SUP-[A-Z0-9-]{8,24})$#',$route,$matches)) {
+                    requireMethod('GET');
+                    $authorization->requirePermission($webUserId,'support.manage');
+                    AdminPage::render($webEmail,$admin->dashboard($webUserId),$csrf,consumeFlash(),'support_ticket',['ticket'=>$supportService->ticketForAdmin($matches[1]),'actor_id'=>$webUserId]);
+                }
                 if (isset($adminPages[$route])) {
                     requireMethod('GET');
+                    $section=$adminPages[$route];
+                    $requiredPermission=match($section){
+                        'users'=>'users.view',
+                        'orders','coupons'=>'commerce.view',
+                        'access_keys'=>'licenses.manage',
+                        'devices'=>'devices.manage',
+                        'support'=>'support.manage',
+                        'audit'=>'audit.view',
+                        'builds'=>'audit.view',
+                        'settings'=>'commerce.manage',
+                        default=>null,
+                    };
+                    if(is_string($requiredPermission))$authorization->requirePermission($webUserId,$requiredPermission);
+                    if(in_array($section,['enhancements','documentation','changelog','status'],true)&&!$authorization->can($webUserId,'content.manage')&&!$authorization->can($webUserId,'commerce.manage'))throw new ApiException('forbidden',403,'You do not have the required permission.');
                     AdminPage::render($webEmail, $admin->dashboard($webUserId), $csrf, consumeFlash(), $adminPages[$route]);
+                }
+                if ($route === '/admin/customer-access/grant') {
+                    requireMethod('POST');requireCsrf();
+                    $grant=$admin->grantAccess($webUserId,(int)($_POST['user_id']??0),(int)($_POST['plan_id']??0),is_string($_POST['start_behavior']??null)?$_POST['start_behavior']:'first_activation',is_string($_POST['reason']??null)?$_POST['reason']:'',$ipAddress);
+                    redirectWithFlash('/admin/customer-access','success',(string)$grant['product_name'].' Access granted to '.(string)$grant['email'].'.');
+                }
+                if (preg_match('#^/admin/customer-access/(\d+)/extend$#',$route,$matches)) {
+                    requireMethod('POST');requireCsrf();$grant=$admin->extendAccess($webUserId,(int)$matches[1],(int)($_POST['plan_id']??0),is_string($_POST['reason']??null)?$_POST['reason']:'',$ipAddress);
+                    redirectWithFlash('/admin/customer-access','success',(string)$grant['product_name'].' Access extended.');
+                }
+                if (preg_match('#^/admin/customer-access/(\d+)/lifetime$#',$route,$matches)) {
+                    requireMethod('POST');requireCsrf();$grant=$admin->convertAccessToLifetime($webUserId,(int)$matches[1],is_string($_POST['reason']??null)?$_POST['reason']:'',$ipAddress);
+                    redirectWithFlash('/admin/customer-access','success',(string)$grant['product_name'].' converted to Lifetime Access.');
+                }
+                if (preg_match('#^/admin/customer-access/(\d+)/revoke$#',$route,$matches)) {
+                    requireMethod('POST');requireCsrf();$admin->revokeAccess($webUserId,(int)$matches[1],is_string($_POST['reason']??null)?$_POST['reason']:'',$ipAddress);
+                    redirectWithFlash('/admin/customer-access','success','Customer Access revoked.');
+                }
+                if ($route === '/admin/access-keys/generate') {
+                    requireMethod('POST');requireCsrf();$planReference=is_string($_POST['plan_ref']??null)?$_POST['plan_ref']:'';[$productSlug,$planSlug]=array_pad(explode(':',$planReference,2),2,'');
+                    $keys=$admin->generateAccessKeys($webUserId,$productSlug,$planSlug,(int)($_POST['quantity']??1),is_string($_POST['expires_at']??null)?$_POST['expires_at']:null,is_string($_POST['reason']??null)?$_POST['reason']:'',$ipAddress);
+                    redirectWithFlash('/admin/access-keys','success',count($keys).' Access Key'.(count($keys)===1?'':'s').' generated. Copy now; full keys are not shown again.',implode("\n",$keys));
+                }
+                if (preg_match('#^/admin/products/(\d+)/pricing$#',$route,$matches)) {
+                    requireMethod('POST');requireCsrf();$admin->updateProductPricing($webUserId,(int)$matches[1],is_array($_POST['plans']??null)?$_POST['plans']:[],$ipAddress);
+                    redirectWithFlash('/admin/enhancements/'.(int)$matches[1].'?tab=pricing','success','Access Plan pricing has been saved.');
+                }
+                if (preg_match('#^/admin/products/(\d+)/documents(?:/(\d+))?$#',$route,$matches)) {
+                    requireMethod('POST');requireCsrf();$admin->saveDocument($webUserId,(int)$matches[1],isset($matches[2])?(int)$matches[2]:null,$_POST,$ipAddress);
+                    redirectWithFlash('/admin/enhancements/'.(int)$matches[1].'?tab=documentation','success','Documentation has been saved.');
+                }
+                if (preg_match('#^/admin/documents/(\d+)/delete$#',$route,$matches)) {
+                    requireMethod('POST');requireCsrf();$admin->deleteDocument($webUserId,(int)$matches[1],$ipAddress);redirectWithFlash('/admin/enhancements','success','Documentation page deleted.');
+                }
+                if (preg_match('#^/admin/products/(\d+)/changelog(?:/(\d+))?$#',$route,$matches)) {
+                    requireMethod('POST');requireCsrf();$admin->saveChangelog($webUserId,(int)$matches[1],isset($matches[2])?(int)$matches[2]:null,$_POST,$ipAddress);
+                    redirectWithFlash('/admin/enhancements/'.(int)$matches[1].'?tab=changelog','success','Changelog entry has been saved.');
+                }
+                if (preg_match('#^/admin/changelog/(\d+)/delete$#',$route,$matches)) {
+                    requireMethod('POST');requireCsrf();$admin->deleteChangelog($webUserId,(int)$matches[1],$ipAddress);redirectWithFlash('/admin/enhancements','success','Changelog entry deleted.');
+                }
+                if (preg_match('#^/admin/services/([a-z0-9-]{2,50})$#',$route,$matches)) {
+                    requireMethod('POST');requireCsrf();$admin->updateServiceStatus($webUserId,$matches[1],is_string($_POST['status']??null)?$_POST['status']:'',is_string($_POST['incident']??null)?$_POST['incident']:'',$ipAddress);redirectWithFlash('/admin/status','success','Service status updated.');
+                }
+                if (preg_match('#^/admin/settings/([a-z0-9_]{2,100})$#',$route,$matches)) {
+                    requireMethod('POST');requireCsrf();$admin->updateSetting($webUserId,$matches[1],is_string($_POST['value']??null)?$_POST['value']:'',$ipAddress);redirectWithFlash('/admin/settings','success','Application setting updated.');
+                }
+                if (preg_match('#^/admin/support/(SUP-[A-Z0-9-]{8,24})/update$#',$route,$matches)) {
+                    requireMethod('POST');requireCsrf();$authorization->requirePermission($webUserId,'support.manage');
+                    $assignee=isset($_POST['assigned_to_user_id'])&&(int)$_POST['assigned_to_user_id']>0?(int)$_POST['assigned_to_user_id']:null;if(isset($_POST['assign_to_me']))$assignee=$webUserId;
+                    $supportService->updateByStaff($matches[1],$webUserId,is_string($_POST['priority']??null)?$_POST['priority']:'normal',is_string($_POST['status']??null)?$_POST['status']:'open',$assignee,is_string($_POST['message']??null)?$_POST['message']:null,isset($_POST['internal_note']),$ipAddress,is_array($_FILES['attachments']??null)?$_FILES['attachments']:[]);
+                    redirectWithFlash('/admin/support/'.rawurlencode($matches[1]),'success','Support ticket updated.');
                 }
                 if ($route === '/admin/licenses/assign') {
                     requireMethod('POST'); requireCsrf();
@@ -548,17 +748,17 @@ try {
                         $planSlug,
                         $ipAddress
                     );
-                    redirectWithFlash('/admin/licenses', 'success', (string) $grant['result']['product']['name'] . ' license assigned to ' . (string) $grant['user']['email'] . '.', (string) $grant['plain_key']);
+                    redirectWithFlash('/admin/customer-access', 'success', (string) $grant['result']['product']['name'] . ' Access assigned to ' . (string) $grant['user']['email'] . '.', (string) $grant['plain_key']);
                 }
                 if (preg_match('#^/admin/subscriptions/(\d+)/unbind$#', $route, $matches)) {
                     requireMethod('POST'); requireCsrf();
                     $admin->unbindSubscription($webUserId, (int) $matches[1], $ipAddress);
-                    redirectWithFlash('/admin/licenses', 'success', 'The license has been unlinked from the HWID.');
+                    redirectWithFlash('/admin/customer-access', 'success', 'The Authorized Device has been reset.');
                 }
                 if (preg_match('#^/admin/subscriptions/(\d+)/delete$#', $route, $matches)) {
                     requireMethod('POST'); requireCsrf();
                     $admin->deleteSubscription($webUserId, (int) $matches[1], $ipAddress);
-                    redirectWithFlash('/admin/licenses', 'success', 'The license has been permanently removed from the account.');
+                    redirectWithFlash('/admin/customer-access', 'success', 'Customer Access has been permanently removed.');
                 }
                 if (preg_match('#^/admin/users/(\d+)/status$#', $route, $matches)) {
                     requireMethod('POST'); requireCsrf();
@@ -574,53 +774,53 @@ try {
                     requireMethod('POST'); requireCsrf();
                     $sale = is_string($_POST['sale_price_cents'] ?? null) && trim($_POST['sale_price_cents']) !== '' ? (int) $_POST['sale_price_cents'] : null;
                     $admin->updatePlan($webUserId, (int)$matches[1], (int)($_POST['price_cents'] ?? -1), $sale, is_string($_POST['badge'] ?? null) ? $_POST['badge'] : null, isset($_POST['is_active']), $ipAddress);
-                    redirectWithFlash('/admin/products', 'success', 'Access Plan pricing has been updated.');
+                    redirectWithFlash('/admin/enhancements', 'success', 'Access Plan pricing has been updated.');
                 }
                 if (preg_match('#^/admin/enhancements/([a-z0-9]+(?:-[a-z0-9]+)*)/status$#', $route, $matches)) {
                     requireMethod('POST'); requireCsrf();
-                    $admin->updateEnhancementStatus($webUserId, $matches[1], is_string($_POST['status'] ?? null) ? $_POST['status'] : '', isset($_POST['purchases_allowed']), is_string($_POST['reason'] ?? null) ? $_POST['reason'] : '', $ipAddress);
-                    redirectWithFlash('/admin/products', 'success', 'Enhancement status has been updated.');
+                    $admin->updateEnhancementStatus($webUserId, $matches[1], is_string($_POST['status'] ?? null) ? $_POST['status'] : '', isset($_POST['purchases_allowed']), is_string($_POST['reason'] ?? null) ? $_POST['reason'] : '', $ipAddress, isset($_POST['freeze_access']));
+                    redirectWithFlash('/admin/enhancements', 'success', 'Enhancement status has been updated.');
                 }
                 if (preg_match('#^/admin/products/(\d+)/content$#', $route, $matches)) {
                     requireMethod('POST'); requireCsrf();
                     $admin->updateProductContent($webUserId, (int) $matches[1], $_POST, $ipAddress);
-                    redirectWithFlash('/admin/products', 'success', 'Product content has been updated.');
+                    redirectWithFlash('/admin/enhancements/' . (int)$matches[1] . '?tab=general', 'success', 'Enhancement details have been updated.');
                 }
                 if (preg_match('#^/admin/products/(\d+)/media(?:/(\d+))?$#', $route, $matches)) {
                     requireMethod('POST'); requireCsrf();
                     $admin->saveProductMedia($webUserId, (int) $matches[1], isset($matches[2]) ? (int) $matches[2] : null, $_POST, $ipAddress);
-                    redirectWithFlash('/admin/products', 'success', 'Product media has been saved.');
+                    redirectWithFlash('/admin/enhancements/' . (int)$matches[1] . '?tab=media', 'success', 'Product media has been saved.');
                 }
                 if (preg_match('#^/admin/media/(\d+)/delete$#', $route, $matches)) {
                     requireMethod('POST'); requireCsrf(); $admin->deleteProductMedia($webUserId, (int) $matches[1], $ipAddress);
-                    redirectWithFlash('/admin/products', 'success', 'Product media has been deleted.');
+                    redirectWithFlash('/admin/enhancements', 'success', 'Product media has been deleted.');
                 }
                 if (preg_match('#^/admin/products/(\d+)/feature-categories(?:/(\d+))?$#', $route, $matches)) {
                     requireMethod('POST'); requireCsrf();
                     $admin->saveFeatureCategory($webUserId, (int) $matches[1], isset($matches[2]) ? (int) $matches[2] : null, $_POST, $ipAddress);
-                    redirectWithFlash('/admin/products', 'success', 'Feature category has been saved.');
+                    redirectWithFlash('/admin/enhancements/' . (int)$matches[1] . '?tab=features', 'success', 'Feature category has been saved.');
                 }
                 if (preg_match('#^/admin/feature-categories/(\d+)/delete$#', $route, $matches)) {
                     requireMethod('POST'); requireCsrf(); $admin->deleteFeatureCategory($webUserId, (int) $matches[1], $ipAddress);
-                    redirectWithFlash('/admin/products', 'success', 'Feature category has been deleted.');
+                    redirectWithFlash('/admin/enhancements', 'success', 'Feature category has been deleted.');
                 }
                 if (preg_match('#^/admin/feature-categories/(\d+)/features(?:/(\d+))?$#', $route, $matches)) {
                     requireMethod('POST'); requireCsrf();
                     $admin->saveFeature($webUserId, (int) $matches[1], isset($matches[2]) ? (int) $matches[2] : null, $_POST, $ipAddress);
-                    redirectWithFlash('/admin/products', 'success', 'Feature has been saved.');
+                    redirectWithFlash('/admin/enhancements', 'success', 'Feature has been saved.');
                 }
                 if (preg_match('#^/admin/features/(\d+)/delete$#', $route, $matches)) {
                     requireMethod('POST'); requireCsrf(); $admin->deleteFeature($webUserId, (int) $matches[1], $ipAddress);
-                    redirectWithFlash('/admin/products', 'success', 'Feature has been deleted.');
+                    redirectWithFlash('/admin/enhancements', 'success', 'Feature has been deleted.');
                 }
                 if (preg_match('#^/admin/products/(\d+)/faqs(?:/(\d+))?$#', $route, $matches)) {
                     requireMethod('POST'); requireCsrf();
                     $admin->saveFaq($webUserId, (int) $matches[1], isset($matches[2]) ? (int) $matches[2] : null, $_POST, $ipAddress);
-                    redirectWithFlash('/admin/products', 'success', 'FAQ entry has been saved.');
+                    redirectWithFlash('/admin/enhancements/' . (int)$matches[1] . '?tab=faq', 'success', 'FAQ entry has been saved.');
                 }
                 if (preg_match('#^/admin/faqs/(\d+)/delete$#', $route, $matches)) {
                     requireMethod('POST'); requireCsrf(); $admin->deleteFaq($webUserId, (int) $matches[1], $ipAddress);
-                    redirectWithFlash('/admin/products', 'success', 'FAQ entry has been deleted.');
+                    redirectWithFlash('/admin/enhancements', 'success', 'FAQ entry has been deleted.');
                 }
                 throw new ApiException('not_found', 404, 'Administration page not found.');
             } catch (ApiException $exception) {
@@ -628,7 +828,32 @@ try {
                     redirectWithFlash('/account', 'error', $exception->getMessage());
                 }
                 redirectWithFlash('/admin', 'error', $exception->getMessage());
+            } catch (Throwable $exception) {
+                $reference=logUnexpectedFailure($exception,$route);
+                if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET') {
+                    redirectWithFlash('/account','error','The administration page could not be loaded. Reference '.$reference.'.');
+                }
+                redirectWithFlash('/admin','error','The modification could not be saved. Reference '.$reference.'.');
             }
+        }
+
+        if (preg_match('#^/account/support/(SUP-[A-Z0-9-]{8,24})$#', $route, $matches)) {
+            requireMethod('GET');
+            $flash=consumeFlash();
+            AccountPage::ticket(
+                $accounts->profile($webUserId),
+                $authorization->roleForUser($webUserId),
+                $authorization->can($webUserId,'admin.access'),
+                $csrf,
+                $supportService->ticketForUser($matches[1],$webUserId),
+                ($flash['type']??null)==='success'?(string)$flash['message']:null,
+                ($flash['type']??null)==='error'?(string)$flash['message']:null
+            );
+        }
+
+        if (preg_match('#^/billing/orders/(PER-[A-Z0-9-]{8,32})$#',$route,$matches)) {
+            requireMethod('GET');
+            AccountPage::order($accounts->profile($webUserId),$authorization->roleForUser($webUserId),$authorization->can($webUserId,'admin.access'),$csrf,$checkoutService->orderForUser($matches[1],$webUserId));
         }
 
         requireMethod('GET');
@@ -636,7 +861,7 @@ try {
         $memberPage = [
             '/account' => 'overview', '/products' => 'products', '/downloads' => 'downloads',
             '/documentation' => 'documentation', '/account/changelog' => 'changelog',
-            '/licenses' => 'licenses', '/devices' => 'devices', '/activity' => 'activity',
+            '/licenses' => 'licenses', '/access' => 'licenses', '/devices' => 'devices', '/activity' => 'activity',
             '/billing' => 'billing', '/account/support' => 'support', '/settings' => 'settings',
             '/security' => 'security',
         ][$route] ?? 'overview';
@@ -645,6 +870,9 @@ try {
         $memberWorkspace['changelog'] = $commercialCatalog->publicChangelog(null, 100);
         $memberWorkspace['orders'] = $checkoutService->ordersForUser($webUserId);
         $memberWorkspace['tickets'] = $supportService->listForUser($webUserId);
+        $memberWorkspace['catalog'] = $commercialCatalog->listEnhancements();
+        $memberWorkspace['launcher_download_url'] = (string) $config['launcher_download_url'];
+        $memberWorkspace['support_email'] = (string) $config['support_email'];
         AccountPage::account(
             $webEmail,
             $subscriptions->listForUser($webUserId, null),
@@ -860,9 +1088,9 @@ try {
 } catch (ApiException $exception) {
     JsonResponse::error($exception);
 } catch (Throwable $exception) {
-    error_log('Pericles API server error: ' . $exception::class);
+    $reference=logUnexpectedFailure($exception,$route);
     JsonResponse::send(500, [
         'error' => 'server_error',
-        'message' => 'An internal server error occurred.',
+        'message' => 'An internal server error occurred. Reference: '.$reference,
     ]);
 }

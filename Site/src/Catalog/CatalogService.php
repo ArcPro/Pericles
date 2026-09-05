@@ -194,12 +194,15 @@ final class CatalogService
             if (!is_array($pending) || (int) $pending['duration_days'] < 1) return;
             $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
             $update = $this->database->prepare(
-                "UPDATE subscriptions SET status = 'active', activated_at = :now, starts_at = :now, started_at = :now, "
-                . 'expires_at = :expires_at, activation_deadline_at = NULL, updated_at = :now WHERE id = :id'
+                "UPDATE subscriptions SET status = 'active', activated_at = :activated_at, starts_at = :starts_at, started_at = :started_at, "
+                . 'expires_at = :expires_at, activation_deadline_at = NULL, updated_at = :updated_at WHERE id = :id'
             );
             $update->execute([
-                ':now' => $now->format('Y-m-d H:i:s'),
+                ':activated_at' => $now->format('Y-m-d H:i:s'),
+                ':starts_at' => $now->format('Y-m-d H:i:s'),
+                ':started_at' => $now->format('Y-m-d H:i:s'),
                 ':expires_at' => $now->modify('+' . (int) $pending['duration_days'] . ' days')->format('Y-m-d H:i:s'),
+                ':updated_at' => $now->format('Y-m-d H:i:s'),
                 ':id' => (int) $pending['id'],
             ]);
         } catch (\PDOException) {

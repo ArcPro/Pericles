@@ -13,6 +13,90 @@
     link.addEventListener('click', () => commerceNavigation.classList.remove('is-open'));
   });
 
+  document.querySelectorAll('[data-stripe-payment]').forEach(async (payment) => {
+    const form = payment.querySelector('[data-stripe-payment-form]');
+    const mountPoint = payment.querySelector('[data-stripe-element]');
+    const loading = payment.querySelector('[data-stripe-loading]');
+    const submit = payment.querySelector('[data-stripe-submit]');
+    const buttonText = payment.querySelector('[data-stripe-button-text]');
+    const errorBox = payment.querySelector('[data-stripe-error]');
+    const originalButtonText = buttonText?.textContent || 'Pay now';
+
+    const showError = (message) => {
+      if (!errorBox) return;
+      errorBox.textContent = message || 'Payment could not be initialized. Please try again.';
+      errorBox.hidden = false;
+    };
+    const setBusy = (busy) => {
+      payment.classList.toggle('is-busy', busy);
+      if (submit) submit.disabled = busy;
+      if (buttonText) buttonText.textContent = busy ? 'Processing…' : originalButtonText;
+    };
+
+    try {
+      if (!form || !mountPoint || !submit || typeof window.Stripe !== 'function') {
+        throw new Error('The secure Stripe form could not be loaded.');
+      }
+      const response = await fetch(payment.dataset.sessionUrl || '', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+        body: new URLSearchParams({ csrf: payment.dataset.csrf || '' }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload.client_secret) {
+        throw new Error(payload.message || 'Stripe payment could not be initialized.');
+      }
+
+      const stripe = window.Stripe(payment.dataset.publishableKey || '');
+      const checkout = stripe.initCheckoutElementsSdk({
+        clientSecret: payload.client_secret,
+        elementsOptions: {
+          appearance: {
+            theme: 'night',
+            variables: {
+              colorPrimary: '#9d64f4',
+              colorBackground: '#17141e',
+              colorText: '#f2eef8',
+              colorDanger: '#f07c88',
+              borderRadius: '7px',
+              fontFamily: 'Figtree, system-ui, sans-serif',
+            },
+          },
+        },
+      });
+      checkout.createPaymentElement().mount(mountPoint);
+      const loaded = await checkout.loadActions();
+      if (loaded.type === 'error' || !loaded.actions) {
+        throw new Error(loaded.error?.message || 'Stripe payment could not be initialized.');
+      }
+      const actions = loaded.actions;
+      if (loading) loading.hidden = true;
+      checkout.on('change', (session) => {
+        if (!payment.classList.contains('is-busy')) submit.disabled = !session.canConfirm;
+      });
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (errorBox) errorBox.hidden = true;
+        setBusy(true);
+        try {
+          const result = await actions.confirm();
+          if (result.type === 'error') {
+            showError(result.error?.message || 'Payment could not be confirmed.');
+          }
+        } catch (error) {
+          showError(error instanceof Error ? error.message : 'Payment could not be confirmed.');
+        } finally {
+          setBusy(false);
+        }
+      });
+    } catch (error) {
+      if (loading) loading.hidden = true;
+      showError(error instanceof Error ? error.message : 'Payment could not be initialized.');
+    }
+  });
+
   document.querySelectorAll('[data-sidebar-toggle]').forEach((toggle) => {
     toggle.addEventListener('click', () => shell?.classList.toggle('sidebar-open'));
   });
@@ -104,6 +188,39 @@
         row.hidden = !row.textContent.toLocaleLowerCase('en').includes(query);
       });
     });
+  });
+
+  document.querySelectorAll('[data-activity-filters]').forEach((filters) => {
+    filters.querySelectorAll('[data-activity-filter]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const selected = button.dataset.activityFilter || 'all';
+        filters.querySelectorAll('[data-activity-filter]').forEach((candidate) => candidate.classList.toggle('active', candidate === button));
+        const panel = filters.closest('.data-panel');
+        panel?.querySelectorAll('[data-activity-category]').forEach((row) => {
+          row.hidden = selected !== 'all' && row.dataset.activityCategory !== selected;
+        });
+      });
+    });
+  });
+
+  document.querySelectorAll('[data-ticket-filters]').forEach((filters) => {
+    filters.querySelectorAll('[data-ticket-filter]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const selected = button.dataset.ticketFilter || 'all';
+        filters.querySelectorAll('[data-ticket-filter]').forEach((candidate) => candidate.classList.toggle('active', candidate === button));
+        const panel = filters.closest('.data-panel');
+        panel?.querySelectorAll('[data-ticket-status]').forEach((row) => {
+          row.hidden = selected !== 'all' && row.dataset.ticketStatus !== selected;
+        });
+      });
+    });
+  });
+
+  document.querySelectorAll('[data-ticket-priority]').forEach((select) => {
+    const warning = select.closest('label')?.querySelector('[data-urgent-warning]');
+    const update = () => { if (warning) warning.hidden = select.value !== 'urgent'; };
+    select.addEventListener('change', update);
+    update();
   });
 
   document.querySelectorAll('[data-plan-selector]').forEach((selector) => {

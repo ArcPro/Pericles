@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+$composerAutoloader = __DIR__ . '/vendor/autoload.php';
+if (is_file($composerAutoloader)) {
+    require_once $composerAutoloader;
+}
+
 spl_autoload_register(static function (string $class): void {
     $prefix = 'Pericles\\';
     if (!str_starts_with($class, $prefix)) {

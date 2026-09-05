@@ -87,7 +87,7 @@ final class CheckoutService
                     ':number' => $orderNumber, ':user_id' => $userId, ':product_id' => (int) $checkout['product_id'],
                     ':plan_id' => (int) $checkout['plan_id'], ':checkout_id' => (int) $checkout['id'],
                     ':amount' => (int) $checkout['price_cents'], ':currency' => (string) $checkout['currency'],
-                    ':product_name' => (string) $checkout['game_name'] . ' Enhancement', ':plan_name' => (string) $checkout['plan_name'],
+                    ':product_name' => (string) $checkout['product_name'], ':plan_name' => (string) $checkout['plan_name'],
                     ':duration_days' => $checkout['duration_days'], ':is_lifetime' => (int) $checkout['is_lifetime'],
                     ':terms_version' => $termsVersion === null ? null : substr($termsVersion, 0, 50),
                     ':consent_at' => $now, ':created_at' => $now, ':updated_at' => $now,
@@ -107,7 +107,7 @@ final class CheckoutService
     public function ordersForUser(int $userId): array
     {
         $statement = $this->database->prepare(
-            'SELECT o.order_number, o.product_name_snapshot, o.plan_name_snapshot, o.amount_cents, o.currency, '
+            'SELECT o.id,o.product_id,o.plan_id,o.order_number, o.product_name_snapshot, o.plan_name_snapshot, o.amount_cents, o.currency, '
             . 'o.status, o.created_at, o.paid_at, p.provider, p.method, p.provider_reference '
             . 'FROM orders o LEFT JOIN payments p ON p.order_id = o.id WHERE o.user_id = :user_id '
             . 'ORDER BY o.created_at DESC, o.id DESC'
@@ -118,10 +118,26 @@ final class CheckoutService
 
     public function orderForUser(string $orderNumber, int $userId): array
     {
-        $statement = $this->database->prepare('SELECT * FROM orders WHERE order_number = :number AND user_id = :user_id LIMIT 1');
+        $statement = $this->database->prepare('SELECT o.*,p.provider,p.provider_reference,p.method,p.confirmed_at FROM orders o LEFT JOIN payments p ON p.order_id=o.id WHERE o.order_number = :number AND o.user_id = :user_id LIMIT 1');
         $statement->execute([':number' => $orderNumber, ':user_id' => $userId]);
         $order = $statement->fetch();
         if (!is_array($order)) throw new ApiException('order_not_found', 404, 'Order not found.');
+        return $order;
+    }
+
+    public function orderForCheckout(string $token, int $userId): array
+    {
+        $checkout = $this->checkout($token, $userId);
+        $statement = $this->database->prepare(
+            'SELECT o.*, u.email AS customer_email FROM orders o '
+            . 'INNER JOIN users u ON u.id = o.user_id '
+            . 'WHERE o.checkout_session_id = :checkout_id AND o.user_id = :user_id LIMIT 1'
+        );
+        $statement->execute([':checkout_id' => (int) $checkout['id'], ':user_id' => $userId]);
+        $order = $statement->fetch();
+        if (!is_array($order)) {
+            throw new ApiException('order_not_found', 404, 'Create the order before starting payment.');
+        }
         return $order;
     }
 
@@ -147,15 +163,15 @@ final class CheckoutService
             }
             $now = $this->now();
             $paymentSql = 'INSERT INTO payments (order_id, provider, provider_reference, status, amount_cents, currency, created_at, confirmed_at, updated_at) '
-                . "VALUES (:order_id, :provider, :reference, 'paid', :amount, :currency, :now, :now, :now) ";
+                . "VALUES (:order_id, :provider, :reference, 'paid', :amount, :currency, :created_at, :confirmed_at, :updated_at) ";
             $paymentSql .= $this->driver === 'sqlite'
                 ? "ON CONFLICT(provider,provider_reference) DO UPDATE SET status='paid',confirmed_at=excluded.confirmed_at,updated_at=excluded.updated_at"
                 : "ON DUPLICATE KEY UPDATE status = 'paid', confirmed_at = VALUES(confirmed_at), updated_at = VALUES(updated_at)";
             $payment = $this->database->prepare($paymentSql);
-            $payment->execute([':order_id' => (int) $order['id'], ':provider' => $provider, ':reference' => $reference, ':amount' => $amountCents, ':currency' => strtoupper($currency), ':now' => $now]);
+            $payment->execute([':order_id' => (int) $order['id'], ':provider' => $provider, ':reference' => $reference, ':amount' => $amountCents, ':currency' => strtoupper($currency), ':created_at' => $now, ':confirmed_at' => $now, ':updated_at' => $now]);
             if ((string) $order['status'] !== 'paid') {
-                $update = $this->database->prepare("UPDATE orders SET status = 'paid', paid_at = :now, updated_at = :now WHERE id = :id AND status <> 'paid'");
-                $update->execute([':now' => $now, ':id' => (int) $order['id']]);
+                $update = $this->database->prepare("UPDATE orders SET status = 'paid', paid_at = :paid_at, updated_at = :updated_at WHERE id = :id AND status <> 'paid'");
+                $update->execute([':paid_at' => $now, ':updated_at' => $now, ':id' => (int) $order['id']]);
                 $this->grantAccess($order, $now);
                 $checkout = $this->database->prepare("UPDATE checkout_sessions SET status = 'converted', updated_at = :now WHERE id = :id");
                 $checkout->execute([':now' => $now, ':id' => (int) $order['checkout_session_id']]);
@@ -198,9 +214,9 @@ final class CheckoutService
         if (!is_array($subscription)) {
             $insert = $this->database->prepare(
                 'INSERT INTO subscriptions (user_id, product_id, plan_id, order_id, status, purchased_at, activation_deadline_at, activated_at, starts_at, started_at, expires_at, bound_device_id, bound_at, created_at, updated_at) '
-                . 'VALUES (:user_id, :product_id, :plan_id, :order_id, :status, :purchased_at, :deadline, :activated_at, :starts_at, :started_at, :expires_at, NULL, NULL, :now, :now)'
+                . 'VALUES (:user_id, :product_id, :plan_id, :order_id, :status, :purchased_at, :deadline, :activated_at, :starts_at, :started_at, :expires_at, NULL, NULL, :created_at, :updated_at)'
             );
-            $insert->execute([':user_id'=>(int)$order['user_id'], ':product_id'=>(int)$order['product_id'], ':plan_id'=>(int)$order['plan_id'], ':order_id'=>(int)$order['id'], ':status'=>$status, ':purchased_at'=>$now, ':deadline'=>$deadline, ':activated_at'=>$activatedAt, ':starts_at'=>$startsAt, ':started_at'=>$startedAt, ':expires_at'=>$expiresAt, ':now'=>$now]);
+            $insert->execute([':user_id'=>(int)$order['user_id'], ':product_id'=>(int)$order['product_id'], ':plan_id'=>(int)$order['plan_id'], ':order_id'=>(int)$order['id'], ':status'=>$status, ':purchased_at'=>$now, ':deadline'=>$deadline, ':activated_at'=>$activatedAt, ':starts_at'=>$startsAt, ':started_at'=>$startedAt, ':expires_at'=>$expiresAt, ':created_at'=>$now, ':updated_at'=>$now]);
         } else {
             $update = $this->database->prepare(
                 'UPDATE subscriptions SET plan_id = :plan_id, order_id = :order_id, status = :status, purchased_at = :purchased_at, '
